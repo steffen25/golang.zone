@@ -34,14 +34,14 @@ func (a *App) Initialize()  {
 		log.Fatal(err)
 	}
 	a.Database = db
-	a.Router = router.InitializeRouter()
+	a.Router = router.InitializeRouter(a.Database)
 }
 
 func (a *App) Run()  {
 	port := a.Config.Port
 	addr := fmt.Sprintf(":%v", port)
 	fmt.Printf("APP is listening on port: %d\n", port)
-	log.Fatal(http.ListenAndServe(addr, a.Router))
+	log.Fatal(http.ListenAndServe(addr, a.Router.Router))
 }
 
 func (a *App) IsProd() bool {

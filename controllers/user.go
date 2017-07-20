@@ -24,7 +24,7 @@ func NewUserController(uc *repositories.UserRepository) *UserController {
 
 func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprint(w, "Hello world")
+	fmt.Fprint(w, "Hello gopher!")
 }
 
 func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {

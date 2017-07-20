@@ -18,7 +18,7 @@ func InitializeRouter(db *database.DB) *Router {
 	r.PathPrefix("/public").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public/"))))
 	ur := repositories.UserRepository{DB: db}
 	uc := controllers.NewUserController(&ur)
-	r.HandleFunc("/hello", middlewares.Logger(uc.HelloWorld)).Methods(http.MethodGet)
+	r.HandleFunc("/", middlewares.Logger(uc.HelloWorld)).Methods(http.MethodGet)
 
 	api := r.PathPrefix("/api/v1").Subrouter()
 	api.HandleFunc("/users", middlewares.Logger(uc.GetAll)).Methods(http.MethodGet)

@@ -58,6 +58,16 @@ func (d *JsonData) GetString(key string) (string, error) {
 	return "", err
 }
 
+func (d *JsonData) GetInt(key string) (int, error) {
+	keys := d.data
+	err := errors.New("Could not find key: "+key)
+	if v, ok := keys[key]; ok {
+		return v.(int), nil
+	}
+
+	return -1, err
+}
+
 /*
 type BaseController struct {
 	ControllerServiceProvider

@@ -5,15 +5,12 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"strconv"
-	"regexp"
 	"time"
 	"fmt"
+	"log"
 
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/models"
-	"io"
-	"log"
-	"errors"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -23,6 +20,10 @@ type UserController struct {
 
 func NewUserController(uc *repositories.UserRepository) *UserController {
 	return &UserController{uc}
+}
+
+func NewAuthController(uc *repositories.UserRepository) *AuthController {
+	return &AuthController{uc}
 }
 
 func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {
@@ -71,8 +72,7 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(err)
 		return
 	}
-	const email_regex = `^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`
-	if m, _ := regexp.MatchString(email_regex, email); !m {
+	if ok := IsEmail(email); !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		err := NewAPIError(false, "You must provide a valid email address", http.StatusBadRequest)
 		json.NewEncoder(w).Encode(err)

@@ -61,6 +61,17 @@ func (ur *UserRepository) GetAll() ([]*models.User, error) {
 	return users, nil
 }
 
+func (ur *UserRepository) FindByEmail(email string) (*models.User, error) {
+	user := models.User{}
+
+	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at FROM users WHERE email = ?", email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (ur *UserRepository) FindById(id int) (*models.User, error) {
 	user := models.User{}
 

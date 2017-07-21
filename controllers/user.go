@@ -11,6 +11,9 @@ import (
 
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/models"
+	"io"
+	"log"
+	"errors"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -28,17 +31,6 @@ func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
-	// check if content type is json, validate valid email
-	params := make(map[string]string)
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&params)
-	if err != nil {
-		err := NewAPIError(false, "Invalid request")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
-		return
-	}
-
 	// Validate the length of the body since some users could send a big payload
 	/*required := []string{"name", "email", "password"}
 	if len(params) != len(required) {
@@ -47,46 +39,63 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(err)
 		return
 	}*/
-	required := []string{"name", "email", "password"}
-	for _, v := range required {
-		_, aerr := checkParam(params, v)
-		if aerr != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(aerr)
-			return
-		}
-	}
-	var name, email, pw string = params["name"], params["email"], params["password"]
 
-	// check if the required fields is in the request that has been sent
+	j, err := GetJSON(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		err := NewAPIError(false, "Invalid request", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	name, err := j.GetString("name")
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusBadRequest)
+		err := NewAPIError(false, "Name is required", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
 	// TODO: Implement something like this and embed in a basecontroller https://stackoverflow.com/a/23960293/2554631
 	if len(name) < 2 || len(name) > 32 {
 		w.WriteHeader(http.StatusBadRequest)
-		aerr := NewAPIError(false, "Name must be between 2 and 32 characters")
-		json.NewEncoder(w).Encode(aerr)
+		err := NewAPIError(false, "Name must be between 2 and 32 characters", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
 		return
 	}
 
+	email, err := j.GetString("email")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		err := NewAPIError(false, "Email is required", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
 	const email_regex = `^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`
 	if m, _ := regexp.MatchString(email_regex, email); !m {
-		aerr := NewAPIError(false, "You must provide a valid email address")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(aerr)
+		err := NewAPIError(false, "You must provide a valid email address", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
 		return
 	}
-
 	exists := uc.UserRepository.Exists(email)
 	if exists {
 		w.WriteHeader(http.StatusBadRequest)
-		aerr := NewAPIError(false, "The email address is already in use")
-		json.NewEncoder(w).Encode(aerr)
+		err := NewAPIError(false, "The email address is already in use", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
 		return
 	}
-
+	pw, err := j.GetString("password")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		err := NewAPIError(false, "Password is required", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
 	if len(pw) < 6 {
 		w.WriteHeader(http.StatusBadRequest)
-		aerr := NewAPIError(false, "Password must not be less than 6 characters")
-		json.NewEncoder(w).Encode(aerr)
+		err := NewAPIError(false, "Password must not be less than 6 characters", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
 		return
 	}
 
@@ -99,6 +108,9 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = uc.UserRepository.Create(u)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		err := NewAPIError(false, "Could not create user", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
 		return
 	}
 
@@ -143,17 +155,10 @@ func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(data)
 }
 
-func checkParam(haystack map[string]string, needle string) (string, *APIError) {
-	if n, ok := haystack[needle]; ok {
-		return n, nil
-	}
-	err := NewAPIError(false, "Missing "+needle+" from request")
-	return "", err
-}
-
-func NewAPIError(success bool, msg string) *APIError {
+func NewAPIError(success bool, msg string, status int) *APIError {
 	return &APIError{
 		Success: success,
 		Message: msg,
+		Status: status,
 	}
 }

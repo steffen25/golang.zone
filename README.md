@@ -10,6 +10,7 @@ The config/app.json should look like this
     "password": "root",
     "database": "test"
   },
-  "port": 8080
+  "port": 8080,
+  "jwt_secret": "secret"
 }
 ```

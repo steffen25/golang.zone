@@ -8,13 +8,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/config"
-	"github.com/steffen25/golang.zone/router"
+	"github.com/gorilla/mux"
+	"github.com/steffen25/golang.zone/routes"
 )
 
 type App struct {
 	Config 		config.Config
 	Database 	*database.DB
-	Router 		*router.Router
+	Router 		*mux.Router
 }
 
 func New() *App {
@@ -34,14 +35,14 @@ func (a *App) Initialize()  {
 		log.Fatal(err)
 	}
 	a.Database = db
-	a.Router = router.InitializeRouter(a.Database)
+	a.Router = routes.InitializeRouter(db)
 }
 
 func (a *App) Run()  {
 	port := a.Config.Port
 	addr := fmt.Sprintf(":%v", port)
 	fmt.Printf("APP is listening on port: %d\n", port)
-	log.Fatal(http.ListenAndServe(addr, a.Router.Router))
+	log.Fatal(http.ListenAndServe(addr, a.Router))
 }
 
 func (a *App) IsProd() bool {

@@ -5,10 +5,15 @@ import (
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/steffen25/golang.zone/repositories"
+	"github.com/steffen25/golang.zone/services"
 )
 
 type AuthController struct {
 	*repositories.UserRepository
+}
+
+func NewAuthController(uc *repositories.UserRepository) *AuthController {
+	return &AuthController{uc}
 }
 
 func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) {
@@ -56,8 +61,13 @@ func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Login success exchange JWT
-	// TODO: JWT token generation
-	json.NewEncoder(w).Encode(APIResponse{Success: true, Message: "Login successful"})
+	t, err := services.GenerateJWT(u)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		err := NewAPIError(false, "Something went wrong", http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
 
+	json.NewEncoder(w).Encode(APIResponse{Success: true, Message: "Login successful", Data: t})
 }

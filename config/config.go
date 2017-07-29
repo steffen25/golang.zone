@@ -16,6 +16,7 @@ type Config struct {
 	Env string 				`json:"env"`
 	Database MysqlConfig 	`json:"database"`
 	Port int 				`json:"port"`
+	JWTSecret string 		`json:"jwt_secret"`
 }
 
 
@@ -32,5 +33,6 @@ func Load(path string) (cfg Config, err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return cfg, nil
 }

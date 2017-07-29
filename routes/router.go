@@ -1,4 +1,4 @@
-package router
+package routes
 
 import (
 	"github.com/gorilla/mux"
@@ -10,11 +10,7 @@ import (
 	"github.com/steffen25/golang.zone/middlewares"
 )
 
-type Router struct {
-	*mux.Router
-}
-
-func InitializeRouter(db *database.DB) *Router {
+func InitializeRouter(db *database.DB) *mux.Router {
 	r := mux.NewRouter()
 	r.PathPrefix("/public").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public/"))))
 	ur := repositories.UserRepository{DB: db}
@@ -28,5 +24,5 @@ func InitializeRouter(db *database.DB) *Router {
 	api.HandleFunc("/users", middlewares.Logger(uc.Create)).Methods(http.MethodPost)
 	api.HandleFunc("/users/{id}", middlewares.Logger(uc.GetById)).Methods(http.MethodGet)
 
-	return &Router{r}
+	return r
 }

@@ -18,14 +18,14 @@ import (
 }*/
 
 type APIResponse struct {
-	Success bool        `json:"success,omitempty"`
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
+	Success bool		`json:"success,omitempty"`
+	Message string		`json:"message,omitempty"`
+	Data    interface{}	`json:"data,omitempty"`
 }
 
 type APIError struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
+	Success bool		`json:"success"`
+	Message string		`json:"message"`
 	Status int			`json:"status"`
 }
 

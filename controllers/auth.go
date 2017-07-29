@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 	"encoding/json"
-	"golang.org/x/crypto/bcrypt"
+
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
 )
@@ -28,7 +28,7 @@ func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	email, err := j.GetString("email")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Email required", http.StatusBadRequest)
+		err := NewAPIError(false, "Email is required", http.StatusBadRequest)
 		json.NewEncoder(w).Encode(err)
 		return
 	}
@@ -53,8 +53,8 @@ func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(err)
 		return
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pw))
-	if err != nil {
+
+	if ok := u.CheckPassword(pw); !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		err := NewAPIError(false, "Password do not match", http.StatusBadRequest)
 		json.NewEncoder(w).Encode(err)

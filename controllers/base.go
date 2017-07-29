@@ -68,6 +68,14 @@ func (d *JsonData) GetInt(key string) (int, error) {
 	return -1, err
 }
 
+func NewAPIError(success bool, msg string, status int) *APIError {
+	return &APIError{
+		Success: success,
+		Message: msg,
+		Status: status,
+	}
+}
+
 /*
 type BaseController struct {
 	ControllerServiceProvider

@@ -28,6 +28,7 @@ func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	// Validate the length of the body since some users could send a big payload
 	/*required := []string{"name", "email", "password"}
 	if len(params) != len(required) {
@@ -149,12 +150,4 @@ func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
 	}
 	data := APIResponse{Data:user}
 	json.NewEncoder(w).Encode(data)
-}
-
-func NewAPIError(success bool, msg string, status int) *APIError {
-	return &APIError{
-		Success: success,
-		Message: msg,
-		Status: status,
-	}
 }

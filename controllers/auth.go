@@ -45,7 +45,7 @@ func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	u, err := ac.UserRepository.FindByEmail(email)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Could not find user", http.StatusBadRequest)
+		err := NewAPIError(false, "Incorrect email or password", http.StatusBadRequest)
 		json.NewEncoder(w).Encode(err)
 		return
 	}
@@ -60,7 +60,7 @@ func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 
 	if ok := u.CheckPassword(pw); !ok {
 		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Password do not match", http.StatusBadRequest)
+		err := NewAPIError(false, "Incorrect email or password", http.StatusBadRequest)
 		json.NewEncoder(w).Encode(err)
 		return
 	}

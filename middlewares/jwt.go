@@ -29,6 +29,7 @@ func RequireJWT(next http.HandlerFunc) http.HandlerFunc {
 			})
 
 		if err != nil || t == nil {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			err := controllers.NewAPIError(false, "Invalid JWT", http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(err)

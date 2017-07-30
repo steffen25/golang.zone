@@ -72,6 +72,6 @@ func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(err)
 		return
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(APIResponse{Success: true, Message: "Login successful", Data: Token{t}})
 }

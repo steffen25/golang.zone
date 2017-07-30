@@ -14,7 +14,7 @@ type DB struct {
 
 func NewDB(dbCfg config.MysqlConfig) (*DB, error) {
 	//DSN := fmt.Sprintf("%s:%s@unix(/tmp/mysql.sock)/%s?parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName)
-	dataSourceName := fmt.Sprintf("%s:%s@/%s?charset=utf8mb4&parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName)
+	dataSourceName := fmt.Sprintf("%s:%s@/%s?charset=%s&parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName, dbCfg.Encoding)
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
 		return nil, err

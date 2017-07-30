@@ -8,7 +8,8 @@ The config/app.json should look like this
   "database": {
     "username": "root",
     "password": "root",
-    "database": "test"
+    "database": "test",
+    "encoding": "utf8mb4"
   },
   "port": 8080,
   "jwt_secret": "secret"

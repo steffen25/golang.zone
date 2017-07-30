@@ -10,6 +10,7 @@ type MysqlConfig struct {
 	Username     	string `json:"db_username"`
 	Password 		string `json:"db_password"`
 	DatabaseName    string `json:"db_database"`
+	Encoding        string `json:"encoding"`
 }
 
 type Config struct {

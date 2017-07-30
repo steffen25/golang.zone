@@ -5,7 +5,7 @@ import (
 )
 
 func IsEmail(email string) bool {
-	const email_regex = `^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`
+	const email_regex = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 	if m, _ := regexp.MatchString(email_regex, email); !m {
 		return false
 	}

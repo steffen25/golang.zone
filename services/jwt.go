@@ -3,8 +3,9 @@ package services
 import (
 	"time"
 	"github.com/steffen25/golang.zone/models"
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	"log"
+
 	"github.com/steffen25/golang.zone/config"
 )
 

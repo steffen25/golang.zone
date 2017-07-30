@@ -12,6 +12,10 @@ type AuthController struct {
 	*repositories.UserRepository
 }
 
+type Token struct {
+	Token string `json:"token"`
+}
+
 func NewAuthController(uc *repositories.UserRepository) *AuthController {
 	return &AuthController{uc}
 }
@@ -69,5 +73,5 @@ func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(APIResponse{Success: true, Message: "Login successful", Data: t})
+	json.NewEncoder(w).Encode(APIResponse{Success: true, Message: "Login successful", Data: Token{t}})
 }

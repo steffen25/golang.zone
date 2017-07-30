@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"net/http"
 )
 
 // BaseController is the common interface for all controllers
@@ -32,6 +33,11 @@ type APIError struct {
 type JsonData struct {
 	data map[string]interface{}
 }
+
+
+//var NotImplemented = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//	w.Write([]byte("Not Implemented"))
+//})
 
 // Inspiration taken from https://github.com/antonholmquist/jason/
 // TODO: Move into a util package maybe? or again into some interface the basecontroller is using
@@ -74,6 +80,20 @@ func NewAPIError(success bool, msg string, status int) *APIError {
 		Message: msg,
 		Status: status,
 	}
+}
+
+// TODO: Use this for both the APIResponse and APIError type
+func JsonResponse(res interface{}, w http.ResponseWriter, code int) {
+
+	json, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(json)
 }
 
 /*

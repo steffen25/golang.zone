@@ -27,6 +27,10 @@ func (u *User) MarshalJSON() ([]byte, error) {
 	}{u.ID, u.Name, u.Email, u.CreatedAt.Format(time.RFC3339)})
 }
 
+func (u *User) NewUser(name string, email string, password string) {
+	// validate length here?
+}
+
 func (u *User) SetPassword(password string) {
 	pwhash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

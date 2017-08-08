@@ -23,8 +23,14 @@ func NewUserController(uc *repositories.UserRepository) *UserController {
 }
 
 func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Context().Value("userId"))
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	fmt.Fprint(w, "Hello gopher!")
+}
+
+func (uc *UserController) Profile(w http.ResponseWriter, r *http.Request) {
+	uid := r.Context().Value("userId")
+	NewAPIResponse(&APIResponse{Data:uid}, w, http.StatusOK)
 }
 
 func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
@@ -40,59 +46,42 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 
 	j, err := GetJSON(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Invalid request", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
 		return
 	}
 
 	name, err := j.GetString("name")
 	if err != nil {
-		log.Print(err)
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Name is required", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Name is required", http.StatusBadRequest}, w)
 		return
 	}
 	// TODO: Implement something like this and embed in a basecontroller https://stackoverflow.com/a/23960293/2554631
 	if len(name) < 2 || len(name) > 32 {
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Name must be between 2 and 32 characters", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Name must be between 2 and 32 characters", http.StatusBadRequest}, w)
 		return
 	}
 
 	email, err := j.GetString("email")
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Email is required", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Email is required", http.StatusBadRequest}, w)
 		return
 	}
 	if ok := IsEmail(email); !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "You must provide a valid email address", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "You must provide a valid email address", http.StatusBadRequest}, w)
 		return
 	}
 	exists := uc.UserRepository.Exists(email)
 	if exists {
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "The email address is already in use", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "The email address is already in use", http.StatusBadRequest}, w)
 		return
 	}
 	pw, err := j.GetString("password")
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Password is required", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Password is required", http.StatusBadRequest}, w)
 		return
 	}
 	if len(pw) < 6 {
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Password must not be less than 6 characters", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Password must not be less than 6 characters", http.StatusBadRequest}, w)
 		return
 	}
 
@@ -105,15 +94,12 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = uc.UserRepository.Create(u)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		err := NewAPIError(false, "Could not create user", http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Could not create user", http.StatusBadRequest}, w)
 		return
 	}
 
 	defer r.Body.Close()
-
-	json.NewEncoder(w).Encode(APIResponse{Success: true, Message: "User created"})
+	NewAPIResponse(&APIResponse{Success: true, Message: "User created"}, w, http.StatusOK)
 }
 
 func (uc *UserController) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -126,8 +112,7 @@ func (uc *UserController) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := APIResponse{Data:users}
-	json.NewEncoder(w).Encode(data)
+	NewAPIResponse(&APIResponse{Data:users}, w, http.StatusOK)
 }
 
 func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
@@ -143,11 +128,11 @@ func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
 	user, err := uc.UserRepository.FindById(id)
 	if err != nil {
 		// user was not found
-		w.WriteHeader(http.StatusBadRequest)
-		err := APIError{Success: false, Message: "Could not find user"}
+		w.WriteHeader(http.StatusNotFound)
+		err := APIError{Success: false, Message: "Could not find user", Status: http.StatusNotFound}
 		json.NewEncoder(w).Encode(err)
 		return
 	}
-	data := APIResponse{Data:user}
-	json.NewEncoder(w).Encode(data)
+
+	NewAPIResponse(&APIResponse{Data:user}, w, http.StatusOK)
 }

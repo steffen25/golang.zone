@@ -74,26 +74,37 @@ func (d *JsonData) GetInt(key string) (int, error) {
 	return -1, err
 }
 
-func NewAPIError(success bool, msg string, status int) *APIError {
-	return &APIError{
-		Success: success,
-		Message: msg,
-		Status: status,
-	}
-}
+func NewAPIError(e *APIError, w http.ResponseWriter) {
+	w.WriteHeader(e.Status)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
-// TODO: Use this for both the APIResponse and APIError type
-func JsonResponse(res interface{}, w http.ResponseWriter, code int) {
-
-	json, err := json.Marshal(res)
+	err := json.NewEncoder(w).Encode(e)
 	if err != nil {
+		log.Println("[API ERROR]: The website encountered an unexpected error.")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
 
+/*func NewAPIResponse(success bool, msg string, data interface{}) *APIResponse {
+	return &APIResponse{
+		Success: success,
+		Message: msg,
+		Data: data,
+	}
+}*/
+
+// TODO: Use this for both the APIResponse and APIError type
+func NewAPIResponse(res *APIResponse, w http.ResponseWriter, code int) {
 	w.WriteHeader(code)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+
+	err := json.NewEncoder(w).Encode(res)
+	if err != nil {
+		log.Println("[API RESPONSE]: The website encountered an unexpected error.")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 /*

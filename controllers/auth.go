@@ -12,13 +12,15 @@ type AuthController struct {
 }
 
 type Token struct {
-	Token string `json:"token"`
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func NewAuthController(uc *repositories.UserRepository) *AuthController {
 	return &AuthController{uc}
 }
 
+// TODO: Create a refresh token
 func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	j, err := GetJSON(r.Body)
@@ -52,11 +54,31 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := services.GenerateJWT(u)
+	accessToken, err := services.GenerateJWT(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: Token{t}}, w, http.StatusOK)
+	refreshToken, _ := services.GenerateRefreshToken(u)
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: Token{accessToken, refreshToken}}, w, http.StatusOK)
+}
+func (ac *AuthController) Refresh(w http.ResponseWriter, r *http.Request) {
+	uid := int(r.Context().Value("userId").(float64))
+	u, err := ac.UserRepository.FindById(uid)
+	if err != nil {
+		NewAPIError(&APIError{false, "Could not find user", http.StatusBadRequest}, w)
+		return
+	}
+
+	accessToken, err := services.GenerateJWT(u)
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
+		return
+	}
+
+	refreshToken, _ := services.GenerateRefreshToken(u)
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: Token{accessToken, refreshToken}}, w, http.StatusOK)
 }

@@ -76,7 +76,7 @@ func (d *JsonData) GetInt(key string) (int, error) {
 
 func NewAPIError(e *APIError, w http.ResponseWriter) {
 	w.WriteHeader(e.Status)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	err := json.NewEncoder(w).Encode(e)
 	if err != nil {
@@ -97,7 +97,7 @@ func NewAPIError(e *APIError, w http.ResponseWriter) {
 // TODO: Use this for both the APIResponse and APIError type
 func NewAPIResponse(res *APIResponse, w http.ResponseWriter, code int) {
 	w.WriteHeader(code)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	err := json.NewEncoder(w).Encode(res)
 	if err != nil {

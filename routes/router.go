@@ -23,7 +23,10 @@ func InitializeRouter(db *database.DB) *mux.Router {
 	api.HandleFunc("/users", middlewares.Logger(uc.GetAll)).Methods(http.MethodGet)
 	api.HandleFunc("/users", middlewares.Logger(uc.Create)).Methods(http.MethodPost)
 	api.HandleFunc("/users/{id}", middlewares.Logger(uc.GetById)).Methods(http.MethodGet)
-	api.HandleFunc("/protected", middlewares.Logger(middlewares.RequireAuthentication(uc.Profile))).Methods(http.MethodGet)
+	api.HandleFunc("/protected", middlewares.Logger(middlewares.RequireAccessToken(uc.Profile))).Methods(http.MethodGet)
+
+	auth := api.PathPrefix("/auth").Subrouter()
+	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireRefreshToken(ac.Refresh))).Methods(http.MethodGet)
 
 	return r
 }

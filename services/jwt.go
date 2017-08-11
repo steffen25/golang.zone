@@ -16,7 +16,7 @@ type TokenClaims struct {
 }
 
 const (
-	tokenDuration = time.Hour * 72
+	tokenDuration = time.Hour * 24
 )
 
 func GenerateJWT(u *models.User) (string, error) {

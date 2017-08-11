@@ -96,6 +96,6 @@ func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: Token{token}}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: Token{token}}, w, http.StatusOK)
 
 }

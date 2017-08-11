@@ -10,7 +10,6 @@ import (
 	"github.com/dgrijalva/jwt-go/request"
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/controllers"
-
 	"github.com/steffen25/golang.zone/database"
 )
 

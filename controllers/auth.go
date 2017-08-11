@@ -5,6 +5,7 @@ import (
 
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
+	"github.com/steffen25/golang.zone/database"
 )
 
 type AuthController struct {
@@ -12,15 +13,13 @@ type AuthController struct {
 }
 
 type Token struct {
-	AccessToken string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	Token string `json:"token"`
 }
 
 func NewAuthController(uc *repositories.UserRepository) *AuthController {
 	return &AuthController{uc}
 }
 
-// TODO: Create a refresh token
 func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	j, err := GetJSON(r.Body)
@@ -54,31 +53,49 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := services.GenerateJWT(u)
+	t, err := services.GenerateJWT(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	refreshToken, _ := services.GenerateRefreshToken(u)
-
-	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: Token{accessToken, refreshToken}}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: Token{t}}, w, http.StatusOK)
 }
-func (ac *AuthController) Refresh(w http.ResponseWriter, r *http.Request) {
+
+func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
+	t := r.Header.Get("Authorization")
+
+	redis, _ := database.RedisConnection()
+	err := redis.Del(t).Err()
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
+		return
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Logout successful"}, w, http.StatusOK)
+
+}
+
+func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	t := r.Header.Get("Authorization")
 	uid := int(r.Context().Value("userId").(float64))
 	u, err := ac.UserRepository.FindById(uid)
 	if err != nil {
 		NewAPIError(&APIError{false, "Could not find user", http.StatusBadRequest}, w)
 		return
 	}
-
-	accessToken, err := services.GenerateJWT(u)
+	token, err := services.GenerateJWT(u)
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
+		return
+	}
+	redis, _ := database.RedisConnection()
+	err = redis.Del(t).Err()
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	refreshToken, _ := services.GenerateRefreshToken(u)
+	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: Token{token}}, w, http.StatusOK)
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: Token{accessToken, refreshToken}}, w, http.StatusOK)
 }

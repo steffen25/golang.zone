@@ -19,14 +19,15 @@ func InitializeRouter(db *database.DB) *mux.Router {
 	r.HandleFunc("/", middlewares.Logger(uc.HelloWorld)).Methods(http.MethodGet)
 
 	api := r.PathPrefix("/api/v1").Subrouter()
-	api.HandleFunc("/authenticate", middlewares.Logger(ac.Authenticate)).Methods(http.MethodPost)
 	api.HandleFunc("/users", middlewares.Logger(uc.GetAll)).Methods(http.MethodGet)
 	api.HandleFunc("/users", middlewares.Logger(uc.Create)).Methods(http.MethodPost)
 	api.HandleFunc("/users/{id}", middlewares.Logger(uc.GetById)).Methods(http.MethodGet)
-	api.HandleFunc("/protected", middlewares.Logger(middlewares.RequireAccessToken(uc.Profile))).Methods(http.MethodGet)
+	api.HandleFunc("/protected", middlewares.Logger(middlewares.RequireAuthentication(uc.Profile))).Methods(http.MethodGet)
 
 	auth := api.PathPrefix("/auth").Subrouter()
-	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireRefreshToken(ac.Refresh))).Methods(http.MethodGet)
+	auth.HandleFunc("/login", middlewares.Logger(ac.Authenticate)).Methods(http.MethodPost)
+	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireAuthentication(ac.RefreshToken))).Methods(http.MethodGet)
+	auth.HandleFunc("/logout", middlewares.Logger(middlewares.RequireAuthentication(ac.Logout))).Methods(http.MethodGet)
 
 	return r
 }

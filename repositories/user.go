@@ -12,7 +12,7 @@ type UserInterface interface {
 	FindById(id int) (*models.User, error)
 	Exists(email string) bool
 	Delete(id int) error
-	Update(id int) error
+	Update(*models.User) error
 }
 
 type UserRepository struct {
@@ -29,6 +29,23 @@ func (ur *UserRepository) Create(u *models.User) error {
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(u.Name, u.Email, u.Password, u.CreatedAt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ur *UserRepository) Update(u *models.User) error {
+
+	// Check if an user already exists with the email
+	// Prepare statement for inserting data
+	stmt, err := ur.DB.Prepare("UPDATE users SET name=?, email=?, password=? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(u.Name, u.Email, u.Password, u.ID)
 	if err != nil {
 		return err
 	}
@@ -75,7 +92,7 @@ func (ur *UserRepository) FindByEmail(email string) (*models.User, error) {
 func (ur *UserRepository) FindById(id int) (*models.User, error) {
 	user := models.User{}
 
-	err := ur.DB.QueryRow("SELECT id, name, email, created_at FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

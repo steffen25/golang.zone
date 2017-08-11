@@ -27,6 +27,7 @@ func InitializeRouter(db *database.DB) *mux.Router {
 	auth := api.PathPrefix("/auth").Subrouter()
 	auth.HandleFunc("/login", middlewares.Logger(ac.Authenticate)).Methods(http.MethodPost)
 	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireAuthentication(ac.RefreshToken))).Methods(http.MethodGet)
+	auth.HandleFunc("/update", middlewares.Logger(middlewares.RequireAuthentication(uc.Update))).Methods(http.MethodPut)
 	auth.HandleFunc("/logout", middlewares.Logger(middlewares.RequireAuthentication(ac.Logout))).Methods(http.MethodGet)
 
 	return r

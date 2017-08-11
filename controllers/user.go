@@ -136,3 +136,52 @@ func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
 
 	NewAPIResponse(&APIResponse{Data:user}, w, http.StatusOK)
 }
+
+func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
+	uid := int(r.Context().Value("userId").(float64))
+
+	user, err := uc.UserRepository.FindById(uid)
+	if err != nil {
+		NewAPIError(&APIError{false, "Could not find user", http.StatusBadRequest}, w)
+		return
+	}
+
+	j, err := GetJSON(r.Body)
+	if err != nil {
+		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
+		return
+	}
+
+	name, err := j.GetString("name")
+	if name != "" && err == nil {
+		user.Name = name
+	}
+
+	newpw, err := j.GetString("newpassword")
+	if newpw != "" && err == nil {
+		// confirm password
+		oldpw, err := j.GetString("oldpassword")
+		if err != nil {
+			NewAPIError(&APIError{false, "Old password is required", http.StatusBadRequest}, w)
+			return
+		}
+		ok := user.CheckPassword(oldpw)
+		if !ok {
+			NewAPIError(&APIError{false, "Old password do not match", http.StatusBadRequest}, w)
+			return
+		}
+		if len(newpw) < 6 {
+			NewAPIError(&APIError{false, "Password must not be less than 6 characters", http.StatusBadRequest}, w)
+			return
+		}
+		user.SetPassword(newpw)
+	}
+
+	err = uc.UserRepository.Update(user)
+	if err != nil {
+		NewAPIError(&APIError{false, "Could not update user", http.StatusBadRequest}, w)
+		return
+	}
+
+	NewAPIResponse(&APIResponse{Data:user}, w, http.StatusOK)
+}

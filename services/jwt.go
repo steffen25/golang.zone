@@ -8,6 +8,9 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/database"
+	"fmt"
+	"github.com/satori/go.uuid"
+	"strconv"
 )
 
 type TokenClaims struct {
@@ -20,8 +23,10 @@ const (
 )
 
 func GenerateJWT(u *models.User) (string, error) {
+	uid := strconv.Itoa(u.ID)
 	authClaims := TokenClaims{
 		jwt.StandardClaims{
+			Id: uid+"."+uuid.NewV4().String(),
 			ExpiresAt: time.Now().Add(tokenDuration).Unix(),
 			IssuedAt: time.Now().Unix(),
 		},
@@ -43,11 +48,36 @@ func GenerateJWT(u *models.User) (string, error) {
 	}
 
 	redis, _ := database.RedisConnection()
-	err = redis.Set(tokenString, u.ID, tokenDuration).Err()
+	err = redis.Set(authClaims.Id, u.ID, tokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
 		return "", err
 	}
 
 	return tokenString, nil
+}
+
+func ExtractJti(tokenStr string) (string, error) {
+	cfg, err := config.Load("config/app.json")
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		// check token signing method etc
+		return []byte(cfg.JWTSecret), nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims["jti"].(string), nil
+	}
+
+	return "", err
 }

@@ -6,6 +6,8 @@ import (
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/database"
+	"strconv"
+	"log"
 )
 
 type AuthController struct {
@@ -63,10 +65,11 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
-	t := r.Header.Get("Authorization")
-
+	tokenString := r.Header.Get("Authorization")
 	redis, _ := database.RedisConnection()
-	err := redis.Del(t).Err()
+
+	jti, err := services.ExtractJti(tokenString)
+	err = redis.Del(jti).Err()
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
@@ -76,9 +79,29 @@ func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	t := r.Header.Get("Authorization")
+func (ac *AuthController) LogoutAll(w http.ResponseWriter, r *http.Request) {
 	uid := int(r.Context().Value("userId").(float64))
+	userId := strconv.Itoa(uid)
+	redis, _ := database.RedisConnection()
+	keys := redis.Keys("*"+userId+".*")
+	for _, token := range keys.Val() {
+		err := redis.Del(token).Err()
+		if err != nil {
+			log.Printf("Could not delete token: %s ; error: %v", token, err)
+		}
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Logout successful"}, w, http.StatusOK)
+}
+
+func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	tokenString := r.Header.Get("Authorization")
+	uid := int(r.Context().Value("userId").(float64))
+	jti, err := services.ExtractJti(tokenString)
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
+		return
+	}
 	u, err := ac.UserRepository.FindById(uid)
 	if err != nil {
 		NewAPIError(&APIError{false, "Could not find user", http.StatusBadRequest}, w)
@@ -90,12 +113,11 @@ func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	redis, _ := database.RedisConnection()
-	err = redis.Del(t).Err()
+	err = redis.Del(jti).Err()
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
 	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: Token{token}}, w, http.StatusOK)
-
 }

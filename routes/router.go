@@ -29,6 +29,7 @@ func InitializeRouter(db *database.DB) *mux.Router {
 	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireAuthentication(ac.RefreshToken))).Methods(http.MethodGet)
 	auth.HandleFunc("/update", middlewares.Logger(middlewares.RequireAuthentication(uc.Update))).Methods(http.MethodPut)
 	auth.HandleFunc("/logout", middlewares.Logger(middlewares.RequireAuthentication(ac.Logout))).Methods(http.MethodGet)
+	auth.HandleFunc("/logout/all", middlewares.Logger(middlewares.RequireAuthentication(ac.LogoutAll))).Methods(http.MethodGet)
 
 	return r
 }

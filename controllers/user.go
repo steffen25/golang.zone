@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"strconv"
 	"time"
@@ -34,7 +33,6 @@ func (uc *UserController) Profile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	// Validate the length of the body since some users could send a big payload
 	/*required := []string{"name", "email", "password"}
 	if len(params) != len(required) {
@@ -103,38 +101,31 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) GetAll(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	users, err := uc.UserRepository.GetAll()
 	if err != nil {
 		// something went wrong
-		err := APIError{Success: false, Message: "Could not fetch users"}
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Could not fetch users", http.StatusBadRequest}, w)
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Data:users}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Data:users}, w, http.StatusOK)
 }
 
 func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		err := APIError{Success: false, Message: "Invalid request"}
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
 		return
 	}
 	user, err := uc.UserRepository.FindById(id)
 	if err != nil {
 		// user was not found
-		w.WriteHeader(http.StatusNotFound)
-		err := APIError{Success: false, Message: "Could not find user", Status: http.StatusNotFound}
-		json.NewEncoder(w).Encode(err)
+		NewAPIError(&APIError{false, "Could not find user", http.StatusNotFound}, w)
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Data:user}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Data:user}, w, http.StatusOK)
 }
 
 func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {

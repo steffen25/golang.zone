@@ -43,7 +43,8 @@ func RequireAuthentication(next http.HandlerFunc) http.HandlerFunc {
 
 		if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
 			redis, _ := database.RedisConnection()
-			val, _ := redis.Get(t.Raw).Result()
+			jti := claims["jti"].(string)
+			val, _ := redis.Get(jti).Result()
 			if val == "" {
 				controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
 				return

@@ -103,7 +103,7 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) GetAll(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	users, err := uc.UserRepository.GetAll()
 	if err != nil {
 		// something went wrong

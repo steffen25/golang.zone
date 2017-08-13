@@ -1,15 +1,9 @@
 package main
 
-import (
-	"fmt"
-	"net/http"
-)
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hi gopher!")
-}
+import "github.com/steffen25/golang.zone/app"
 
 func main() {
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	app := app.New()
+	app.Initialize()
+	app.Run()
 }

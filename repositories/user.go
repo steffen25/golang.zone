@@ -4,22 +4,28 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/database"
 	"database/sql"
+	"errors"
 )
 
-type UserInterface interface {
-	Create(*models.User) error
+type UserRepository interface {
+	Create(u *models.User) error
 	GetAll() ([]*models.User, error)
 	FindById(id int) (*models.User, error)
+	FindByEmail(email string) (*models.User, error)
 	Exists(email string) bool
 	Delete(id int) error
-	Update(*models.User) error
+	Update(u *models.User) error
 }
 
-type UserRepository struct {
+type userRepository struct {
 	*database.DB
 }
 
-func (ur *UserRepository) Create(u *models.User) error {
+func NewUserRespository(db *database.DB) UserRepository {
+	return &userRepository{db}
+}
+
+func (ur *userRepository) Create(u *models.User) error {
 
 	// Check if an user already exists with the email
 	// Prepare statement for inserting data
@@ -36,7 +42,7 @@ func (ur *UserRepository) Create(u *models.User) error {
 	return nil
 }
 
-func (ur *UserRepository) Update(u *models.User) error {
+func (ur *userRepository) Update(u *models.User) error {
 
 	// Check if an user already exists with the email
 	// Prepare statement for inserting data
@@ -53,7 +59,7 @@ func (ur *UserRepository) Update(u *models.User) error {
 	return nil
 }
 
-func (ur *UserRepository) GetAll() ([]*models.User, error) {
+func (ur *userRepository) GetAll() ([]*models.User, error) {
 	var users []*models.User
 
 	rows, err := ur.DB.Query("SELECT id, name, email, created_at from users")
@@ -78,7 +84,7 @@ func (ur *UserRepository) GetAll() ([]*models.User, error) {
 	return users, nil
 }
 
-func (ur *UserRepository) FindByEmail(email string) (*models.User, error) {
+func (ur *userRepository) FindByEmail(email string) (*models.User, error) {
 	user := models.User{}
 
 	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at FROM users WHERE email = ?", email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
@@ -89,7 +95,7 @@ func (ur *UserRepository) FindByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-func (ur *UserRepository) FindById(id int) (*models.User, error) {
+func (ur *userRepository) FindById(id int) (*models.User, error) {
 	user := models.User{}
 
 	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
@@ -100,7 +106,7 @@ func (ur *UserRepository) FindById(id int) (*models.User, error) {
 	return &user, nil
 }
 
-func (ur *UserRepository) Exists(email string) bool {
+func (ur *userRepository) Exists(email string) bool {
 
 	// Check if an user already exists with the email
 	var exists bool
@@ -115,4 +121,9 @@ func (ur *UserRepository) Exists(email string) bool {
 	}
 
 	return exists
+}
+
+func (ur *userRepository) Delete(id int) error {
+
+	return errors.New("hej")
 }

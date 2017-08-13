@@ -14,11 +14,11 @@ import (
 
 // Embed a UserDAO/Repository thingy
 type UserController struct {
-	*repositories.UserRepository
+	repositories.UserRepository
 }
 
-func NewUserController(uc *repositories.UserRepository) *UserController {
-	return &UserController{uc}
+func NewUserController(us repositories.UserRepository) *UserController {
+	return &UserController{us}
 }
 
 func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {

@@ -11,15 +11,15 @@ import (
 )
 
 type AuthController struct {
-	*repositories.UserRepository
+	repositories.UserRepository
 }
 
 type Token struct {
 	Token string `json:"token"`
 }
 
-func NewAuthController(uc *repositories.UserRepository) *AuthController {
-	return &AuthController{uc}
+func NewAuthController(us repositories.UserRepository) *AuthController {
+	return &AuthController{us}
 }
 
 func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {

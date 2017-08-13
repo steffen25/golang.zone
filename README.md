@@ -15,3 +15,7 @@ The config/app.json should look like this
   "jwt_secret": "secret"
 }
 ```
+
+### Prerequisites
+- mysql
+- redis on port 6379 (revoke JWTs)

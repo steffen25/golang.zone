@@ -9,13 +9,13 @@ import (
 // User represents a user account
 // Make sure not to expose the password field when marshalling to json
 type User struct {
-	ID     int    		`json:"id"`
-	Name  string 		`json:"name"`
-	Email   string 		`json:"email"`
-	Password string 	`json:"password"`
-	Admin bool 			`json:"admin"`
-	CreatedAt time.Time	`json:"createdAt"`
-	UpdatedAt time.Time	`json:"updatedAt"`
+	ID     		int    		`json:"id"`
+	Name  		string 		`json:"name"`
+	Email   	string 		`json:"email"`
+	Password 	string 		`json:"password"`
+	Admin 		bool 		`json:"admin"`
+	CreatedAt 	time.Time	`json:"createdAt"`
+	UpdatedAt 	time.Time	`json:"updatedAt"`
 }
 
 // TODO: Maybe find a better solution to remove the password when marshalling to json

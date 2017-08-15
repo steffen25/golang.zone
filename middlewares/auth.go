@@ -14,7 +14,7 @@ import (
 )
 
 // TODO: Create error struct that we can use instead of calling controllers?
-func RequireAuthentication(next http.HandlerFunc) http.HandlerFunc {
+func RequireAuthentication(next http.HandlerFunc, admin bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cfg, err := config.Load("config/app.json")
 		if err != nil {
@@ -72,6 +72,16 @@ func RequireAuthentication(next http.HandlerFunc) http.HandlerFunc {
 			}
 			ctx := services.ContextWithUser(r.Context(), user)*/
 			ctx := services.ContextWithUserId(r.Context(), uid)
+			if !admin {
+				next(w, r.WithContext(ctx))
+				return
+			}
+			// Check if the user's token has admin true
+			isAdmin := claims["admin"].(bool)
+			if !isAdmin {
+				controllers.NewAPIError(&controllers.APIError{false, "Admin required", http.StatusForbidden}, w)
+				return
+			}
 			next(w, r.WithContext(ctx))
 		}
 	}

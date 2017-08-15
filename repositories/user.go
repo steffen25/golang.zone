@@ -62,7 +62,7 @@ func (ur *userRepository) Update(u *models.User) error {
 func (ur *userRepository) GetAll() ([]*models.User, error) {
 	var users []*models.User
 
-	rows, err := ur.DB.Query("SELECT id, name, email, created_at from users")
+	rows, err := ur.DB.Query("SELECT id, name, email, created_at, admin from users")
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (ur *userRepository) GetAll() ([]*models.User, error) {
 
 	for rows.Next() {
 		u := new(models.User)
-		err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.CreatedAt)
+		err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.CreatedAt, &u.Admin)
 		if err != nil {
 			return nil, err
 		}
@@ -87,7 +87,7 @@ func (ur *userRepository) GetAll() ([]*models.User, error) {
 func (ur *userRepository) FindByEmail(email string) (*models.User, error) {
 	user := models.User{}
 
-	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at FROM users WHERE email = ?", email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at, admin FROM users WHERE email = ?", email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.Admin)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (ur *userRepository) FindByEmail(email string) (*models.User, error) {
 func (ur *userRepository) FindById(id int) (*models.User, error) {
 	user := models.User{}
 
-	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at, admin FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.Admin)
 	if err != nil {
 		return nil, err
 	}

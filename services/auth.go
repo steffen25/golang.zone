@@ -20,6 +20,7 @@ import (
 type TokenClaims struct {
 	jwt.StandardClaims
 	UID int `json:"id"`
+	Admin bool `json:"admin"`
 }
 
 const (
@@ -39,6 +40,7 @@ func GenerateJWT(u *models.User) (string, error) {
 			IssuedAt: time.Now().Unix(),
 		},
 		u.ID,
+		u.Admin,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)

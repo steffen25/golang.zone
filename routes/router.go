@@ -29,19 +29,19 @@ func InitializeRouter(db *database.DB) *mux.Router {
 	api.HandleFunc("/users", middlewares.Logger(uc.GetAll)).Methods(http.MethodGet)
 	api.HandleFunc("/users", middlewares.Logger(uc.Create)).Methods(http.MethodPost)
 	api.HandleFunc("/users/{id}", middlewares.Logger(uc.GetById)).Methods(http.MethodGet)
-	api.HandleFunc("/protected", middlewares.Logger(middlewares.RequireAuthentication(uc.Profile))).Methods(http.MethodGet)
+	api.HandleFunc("/protected", middlewares.Logger(middlewares.RequireAuthentication(uc.Profile, false))).Methods(http.MethodGet)
 
 	// Posts
 	api.HandleFunc("/posts", middlewares.Logger(pc.GetAll)).Methods(http.MethodGet)
-	api.HandleFunc("/posts", middlewares.Logger(middlewares.RequireAuthentication(pc.Create))).Methods(http.MethodPost)
+	api.HandleFunc("/posts", middlewares.Logger(middlewares.RequireAuthentication(pc.Create, true))).Methods(http.MethodPost)
 
 	// Authentication
 	auth := api.PathPrefix("/auth").Subrouter()
 	auth.HandleFunc("/login", middlewares.Logger(ac.Authenticate)).Methods(http.MethodPost)
-	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireAuthentication(ac.RefreshToken))).Methods(http.MethodGet)
-	auth.HandleFunc("/update", middlewares.Logger(middlewares.RequireAuthentication(uc.Update))).Methods(http.MethodPut)
-	auth.HandleFunc("/logout", middlewares.Logger(middlewares.RequireAuthentication(ac.Logout))).Methods(http.MethodGet)
-	auth.HandleFunc("/logout/all", middlewares.Logger(middlewares.RequireAuthentication(ac.LogoutAll))).Methods(http.MethodGet)
+	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireAuthentication(ac.RefreshToken, false))).Methods(http.MethodGet)
+	auth.HandleFunc("/update", middlewares.Logger(middlewares.RequireAuthentication(uc.Update, false))).Methods(http.MethodPut)
+	auth.HandleFunc("/logout", middlewares.Logger(middlewares.RequireAuthentication(ac.Logout, false))).Methods(http.MethodGet)
+	auth.HandleFunc("/logout/all", middlewares.Logger(middlewares.RequireAuthentication(ac.LogoutAll, false))).Methods(http.MethodGet)
 
 	return r
 }

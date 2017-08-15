@@ -13,6 +13,7 @@ type User struct {
 	Name  string 		`json:"name"`
 	Email   string 		`json:"email"`
 	Password string 	`json:"password"`
+	Admin bool 			`json:"admin"`
 	CreatedAt time.Time	`json:"createdAt"`
 	UpdatedAt time.Time	`json:"updatedAt"`
 }
@@ -42,4 +43,8 @@ func (u *User) CheckPassword(password string) bool {
 	}
 
 	return true
+}
+
+func (u *User) IsAdmin() bool {
+	return u.Admin == true
 }

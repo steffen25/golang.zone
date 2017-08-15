@@ -10,6 +10,7 @@ import (
 
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/models"
+	"github.com/steffen25/golang.zone/services"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -28,7 +29,12 @@ func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) Profile(w http.ResponseWriter, r *http.Request) {
-	uid := r.Context().Value("userId")
+	uid, err := services.UserIdFromContext(r.Context())
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		return
+	}
+
 	NewAPIResponse(&APIResponse{Data:uid}, w, http.StatusOK)
 }
 
@@ -129,7 +135,11 @@ func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
-	uid := int(r.Context().Value("userId").(float64))
+	uid, err := services.UserIdFromContext(r.Context())
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		return
+	}
 
 	user, err := uc.UserRepository.FindById(uid)
 	if err != nil {

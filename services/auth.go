@@ -4,13 +4,17 @@ import (
 	"time"
 	"github.com/dgrijalva/jwt-go"
 	"log"
+	"strconv"
+	"context"
+	"errors"
+	"fmt"
 
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/database"
-	"fmt"
 	"github.com/satori/go.uuid"
-	"strconv"
+	"github.com/dgrijalva/jwt-go/request"
+	"net/http"
 )
 
 type TokenClaims struct {
@@ -20,7 +24,11 @@ type TokenClaims struct {
 
 const (
 	tokenDuration = time.Hour * 24
+	userCtxKey userCtxKeyType = "user"
+	userIdCtxKey userCtxKeyType = "userId"
 )
+
+type userCtxKeyType string
 
 func GenerateJWT(u *models.User) (string, error) {
 	uid := strconv.Itoa(u.ID)
@@ -48,6 +56,11 @@ func GenerateJWT(u *models.User) (string, error) {
 	}
 
 	redis, _ := database.RedisConnection()
+	/*uJson, err := json.Marshal(u)
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}*/
 	err = redis.Set(authClaims.Id, u.ID, tokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
@@ -80,4 +93,56 @@ func ExtractJti(tokenStr string) (string, error) {
 	}
 
 	return "", err
+}
+
+func GetTokenFromRequest(r *http.Request) (string, error) {
+	cfg, err := config.Load("config/app.json")
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}
+	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			return []byte(cfg.JWTSecret), nil
+		})
+
+	if err != nil || !token.Valid {
+		return "", err
+	}
+
+	return token.Raw, nil
+
+}
+
+// TODO: https://www.calhoun.io/pitfalls-of-context-values-and-how-to-avoid-or-mitigate-them/
+func ContextWithUserId(ctx context.Context, uID int) context.Context {
+	return context.WithValue(ctx, userIdCtxKey, uID)
+}
+
+func UserIdFromContext(ctx context.Context) (int, error) {
+	uID, ok := ctx.Value(userIdCtxKey).(int)
+	if !ok {
+		log.Println("Context missing userID")
+		return -1, errors.New("[SERVICE]: Context missing userID")
+	}
+
+	return uID, nil
+}
+
+func ContextWithUser(ctx context.Context, u *models.User) context.Context {
+	return context.WithValue(ctx, userCtxKey, u)
+}
+
+func UserFromContext(ctx context.Context) (*models.User, error) {
+	u, ok := ctx.Value(userCtxKey).(*models.User)
+	if !ok {
+		log.Println("Context missing user")
+		return nil, errors.New("[SERVICE]: Context missing userID")
+	}
+
+	return u, nil
 }

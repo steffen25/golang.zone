@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"fmt"
 	"log"
-	"context"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/controllers"
 	"github.com/steffen25/golang.zone/database"
+	"github.com/steffen25/golang.zone/services"
 )
 
 // TODO: Create error struct that we can use instead of calling controllers?
@@ -44,14 +44,35 @@ func RequireAuthentication(next http.HandlerFunc) http.HandlerFunc {
 		if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
 			redis, _ := database.RedisConnection()
 			jti := claims["jti"].(string)
-			val, _ := redis.Get(jti).Result()
-			if val == "" {
+			val, err := redis.Get(jti).Result()
+			if err != nil || val == "" {
 				controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
 				return
 			}
-			ctx := context.WithValue(r.Context(), "userId", claims["id"])
+			// TODO: Put the user into the context instead of the user id? Right now we only need to reference to the id of the user that is logged in
+			// maybe put the json representation of the user inside redis and use the 'val' here
+			/*user := &models.User{}
+			err = json.Unmarshal([]byte(val), &user)
+			if err != nil {
+				controllers.NewAPIError(&controllers.APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+				return
+			}
+			ctx := services.ContextWithUser(r.Context(), user)*/
+			uid := int(claims["id"].(float64))
+			/*db, err := database.NewDB(cfg.Database)
+			if err != nil {
+				controllers.NewAPIError(&controllers.APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+				return
+			}
+			userRepo := repositories.NewUserRespository(db)
+			user, err := userRepo.FindById(uid)
+			if err != nil {
+				controllers.NewAPIError(&controllers.APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+				return
+			}
+			ctx := services.ContextWithUser(r.Context(), user)*/
+			ctx := services.ContextWithUserId(r.Context(), uid)
 			next(w, r.WithContext(ctx))
 		}
 	}
 }
-

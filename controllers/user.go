@@ -92,7 +92,7 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 	u := &models.User{
 		Name: name,
 		Email: email,
-		Admin: true,
+		Admin: false,
 		CreatedAt: time.Now(),
 	}
 	u.SetPassword(pw)

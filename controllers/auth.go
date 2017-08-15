@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
+	"log"
 
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/database"
-	"strconv"
-	"log"
 )
 
 type AuthController struct {
@@ -65,9 +65,13 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
-	tokenString := r.Header.Get("Authorization")
-	redis, _ := database.RedisConnection()
+	tokenString, err := services.GetTokenFromRequest(r)
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
+		return
+	}
 
+	redis, _ := database.RedisConnection()
 	jti, err := services.ExtractJti(tokenString)
 	err = redis.Del(jti).Err()
 	if err != nil {
@@ -80,7 +84,11 @@ func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *AuthController) LogoutAll(w http.ResponseWriter, r *http.Request) {
-	uid := int(r.Context().Value("userId").(float64))
+	uid, err := services.UserIdFromContext(r.Context())
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		return
+	}
 	userId := strconv.Itoa(uid)
 	redis, _ := database.RedisConnection()
 	keys := redis.Keys("*"+userId+".*")
@@ -95,8 +103,16 @@ func (ac *AuthController) LogoutAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	tokenString := r.Header.Get("Authorization")
-	uid := int(r.Context().Value("userId").(float64))
+	tokenString, err := services.GetTokenFromRequest(r)
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		return
+	}
+	uid, err := services.UserIdFromContext(r.Context())
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		return
+	}
 	jti, err := services.ExtractJti(tokenString)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)

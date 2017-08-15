@@ -1,12 +1,14 @@
 package controllers
 
 import (
-	"github.com/steffen25/golang.zone/repositories"
 	"net/http"
-	"github.com/steffen25/golang.zone/models"
 	"time"
 	"regexp"
 	"strings"
+
+	"github.com/steffen25/golang.zone/models"
+	"github.com/steffen25/golang.zone/services"
+	"github.com/steffen25/golang.zone/repositories"
 )
 
 type PostController struct {
@@ -20,7 +22,6 @@ func NewPostController(pr repositories.PostRepository) *PostController {
 func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 	posts, err := pc.PostRepository.GetAll()
 	if err != nil {
-		// something went wrong
 		NewAPIError(&APIError{false, "Could not fetch posts", http.StatusBadRequest}, w)
 		return
 	}
@@ -28,8 +29,12 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 	NewAPIResponse(&APIResponse{Success: true, Data: posts}, w, http.StatusOK)
 }
 
-func (pc *PostController) Create (w http.ResponseWriter, r *http.Request) {
-	uid := int(r.Context().Value("userId").(float64))
+func (pc *PostController) Create(w http.ResponseWriter, r *http.Request) {
+	uid, err := services.UserIdFromContext(r.Context())
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		return
+	}
 
 	j, err := GetJSON(r.Body)
 	if err != nil {

@@ -1,13 +1,14 @@
 package controllers
 
 import (
-	"github.com/steffen25/golang.zone/repositories"
 	"net/http"
-	"github.com/steffen25/golang.zone/models"
 	"time"
 	"regexp"
 	"strings"
+
+	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/services"
+	"github.com/steffen25/golang.zone/repositories"
 )
 
 type PostController struct {

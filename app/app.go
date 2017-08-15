@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/config"
-	"github.com/gorilla/mux"
 	"github.com/steffen25/golang.zone/routes"
 )
 

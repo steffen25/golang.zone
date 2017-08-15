@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
+	"log"
 
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/database"
-	"strconv"
-	"log"
 )
 
 type AuthController struct {

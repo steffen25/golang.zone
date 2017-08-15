@@ -92,6 +92,7 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 	u := &models.User{
 		Name: name,
 		Email: email,
+		Admin: false,
 		CreatedAt: time.Now(),
 	}
 	u.SetPassword(pw)
@@ -184,5 +185,5 @@ func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Data:user}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Data: user}, w, http.StatusOK)
 }

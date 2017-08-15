@@ -1,10 +1,11 @@
 package repositories
 
 import (
-	"github.com/steffen25/golang.zone/models"
-	"github.com/steffen25/golang.zone/database"
 	"database/sql"
 	"errors"
+
+	"github.com/steffen25/golang.zone/models"
+	"github.com/steffen25/golang.zone/database"
 )
 
 type UserRepository interface {

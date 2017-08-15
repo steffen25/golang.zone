@@ -1,10 +1,11 @@
 package repositories
 
 import (
-	"github.com/steffen25/golang.zone/models"
-	"github.com/steffen25/golang.zone/database"
 	"strconv"
 	"log"
+
+	"github.com/steffen25/golang.zone/models"
+	"github.com/steffen25/golang.zone/database"
 )
 
 type PostRepository interface {

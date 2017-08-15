@@ -8,13 +8,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 
+	"github.com/satori/go.uuid"
+	"github.com/dgrijalva/jwt-go/request"
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/database"
-	"github.com/satori/go.uuid"
-	"github.com/dgrijalva/jwt-go/request"
-	"net/http"
 )
 
 type TokenClaims struct {

@@ -19,7 +19,7 @@ func InitializeRouter(db *database.DB) *mux.Router {
 
 	// Controllers
 	ac := controllers.NewAuthController(ur)
-	uc := controllers.NewUserController(ur)
+	uc := controllers.NewUserController(ur, pr)
 	pc := controllers.NewPostController(pr)
 
 	r.HandleFunc("/", middlewares.Logger(uc.HelloWorld)).Methods(http.MethodGet)
@@ -29,6 +29,7 @@ func InitializeRouter(db *database.DB) *mux.Router {
 	api.HandleFunc("/users", middlewares.Logger(uc.GetAll)).Methods(http.MethodGet)
 	api.HandleFunc("/users", middlewares.Logger(uc.Create)).Methods(http.MethodPost)
 	api.HandleFunc("/users/{id}", middlewares.Logger(uc.GetById)).Methods(http.MethodGet)
+	api.HandleFunc("/users/{id}/posts", middlewares.Logger(uc.FindPostsByUser)).Methods(http.MethodGet)
 	api.HandleFunc("/protected", middlewares.Logger(middlewares.RequireAuthentication(uc.Profile, false))).Methods(http.MethodGet)
 
 	// Posts

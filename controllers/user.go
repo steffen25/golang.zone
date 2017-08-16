@@ -16,10 +16,11 @@ import (
 // Embed a UserDAO/Repository thingy
 type UserController struct {
 	repositories.UserRepository
+	repositories.PostRepository
 }
 
-func NewUserController(us repositories.UserRepository) *UserController {
-	return &UserController{us}
+func NewUserController(ur repositories.UserRepository, pr repositories.PostRepository) *UserController {
+	return &UserController{ur, pr}
 }
 
 func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {
@@ -186,4 +187,28 @@ func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	NewAPIResponse(&APIResponse{Success: true, Data: user}, w, http.StatusOK)
+}
+
+func (uc *UserController) FindPostsByUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
+		return
+	}
+	user, err := uc.UserRepository.FindById(id)
+	if err != nil {
+		// user was not found
+		NewAPIError(&APIError{false, "Could not find user", http.StatusNotFound}, w)
+		return
+	}
+
+	posts, err := uc.PostRepository.FindByUser(user)
+	if err != nil {
+		// user was not found
+		NewAPIError(&APIError{false, "Could not find user posts", http.StatusNotFound}, w)
+		return
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Data: posts}, w, http.StatusOK)
 }

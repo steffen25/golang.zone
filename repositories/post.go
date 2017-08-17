@@ -6,6 +6,7 @@ import (
 
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/database"
+	"fmt"
 )
 
 type PostRepository interface {
@@ -13,6 +14,7 @@ type PostRepository interface {
 	GetAll() ([]*models.Post, error)
 	FindById(id int) (*models.Post, error)
 	FindByUser(u *models.User) ([]*models.Post, error)
+	Exists(slug string) bool
 	Delete(id int) error
 	Update(p *models.Post) error
 }
@@ -26,6 +28,16 @@ func NewPostRepository(db *database.DB) PostRepository {
 }
 
 func (pr *postRepository) Create(p *models.Post) error {
+	exists := pr.Exists(p.Slug)
+	if exists {
+		err := pr.createWithSlugCount(p)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
 	stmt, err := pr.DB.Prepare("INSERT INTO posts SET title=?, slug=?, body=?, created_at=?, user_id=?")
 	if err != nil {
 		return err
@@ -35,16 +47,7 @@ func (pr *postRepository) Create(p *models.Post) error {
 	if err != nil {
 		return err
 	}
-	lastId, err := res.LastInsertId()
-	if err != nil {
-		return err
-	}
-	id := strconv.FormatInt(lastId, 10)
-
-	_, err = pr.DB.Exec("UPDATE posts SET slug=? WHERE id=?", p.Slug+"-"+id, lastId)
-	if err != nil {
-		return err
-	}
+	log.Println(res)
 
 	return nil
 }
@@ -110,6 +113,42 @@ func (pr *postRepository) Delete(id int) error {
 }
 
 func (pr *postRepository) Update(p *models.Post) error {
+	return nil
+}
+
+// Check if a slug already exists
+func (pr *postRepository) Exists(slug string) bool {
+	var exists bool
+	query := fmt.Sprintf("SELECT EXISTS (SELECT id FROM posts WHERE slug = '%s')", slug)
+	err := pr.DB.QueryRow(query).Scan(&exists)
+	if err != nil {
+		log.Printf("[POST REPO]: Exists err %v", err)
+		return true
+	}
+
+
+	return exists
+}
+
+func (pr *postRepository) createWithSlugCount(p *models.Post) error {
+	var count int
+	err := pr.DB.QueryRow("SELECT COUNT(*) FROM posts where slug LIKE ?", "%"+p.Slug+"%").Scan(&count)
+	if err != nil {
+		return err
+	}
+	counter := strconv.Itoa(count)
+
+	stmt, err := pr.DB.Prepare("INSERT INTO posts SET title=?, slug=?, body=?, created_at=?, user_id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(p.Title, p.Slug+"-"+counter, p.Body, p.CreatedAt, p.UserID)
+	if err != nil {
+		return err
+	}
+
+
 	return nil
 }
 

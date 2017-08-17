@@ -6,7 +6,6 @@ import (
 
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/database"
-	"fmt"
 )
 
 type PostRepository interface {
@@ -43,11 +42,10 @@ func (pr *postRepository) Create(p *models.Post) error {
 		return err
 	}
 	defer stmt.Close()
-	res, err := stmt.Exec(p.Title, p.Slug, p.Body, p.CreatedAt, p.UserID)
+	_, err = stmt.Exec(p.Title, p.Slug, p.Body, p.CreatedAt, p.UserID)
 	if err != nil {
 		return err
 	}
-	log.Println(res)
 
 	return nil
 }
@@ -95,7 +93,6 @@ func (pr *postRepository) FindByUser(u *models.User) ([]*models.Post, error) {
 		p := new(models.Post)
 		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 		posts = append(posts, p)
@@ -119,17 +116,16 @@ func (pr *postRepository) Update(p *models.Post) error {
 // Check if a slug already exists
 func (pr *postRepository) Exists(slug string) bool {
 	var exists bool
-	query := fmt.Sprintf("SELECT EXISTS (SELECT id FROM posts WHERE slug = '%s')", slug)
-	err := pr.DB.QueryRow(query).Scan(&exists)
+	err := pr.DB.QueryRow("SELECT EXISTS (SELECT id FROM posts WHERE slug = '?')", slug).Scan(&exists)
 	if err != nil {
 		log.Printf("[POST REPO]: Exists err %v", err)
 		return true
 	}
 
-
 	return exists
 }
 
+// This is a 'private' function to be used in cases where a slug already exists
 func (pr *postRepository) createWithSlugCount(p *models.Post) error {
 	var count int
 	err := pr.DB.QueryRow("SELECT COUNT(*) FROM posts where slug LIKE ?", "%"+p.Slug+"%").Scan(&count)
@@ -148,7 +144,5 @@ func (pr *postRepository) createWithSlugCount(p *models.Post) error {
 		return err
 	}
 
-
 	return nil
 }
-

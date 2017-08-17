@@ -6,6 +6,7 @@ import (
 
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/database"
+	"fmt"
 )
 
 type PostRepository interface {
@@ -116,7 +117,8 @@ func (pr *postRepository) Update(p *models.Post) error {
 // Check if a slug already exists
 func (pr *postRepository) Exists(slug string) bool {
 	var exists bool
-	err := pr.DB.QueryRow("SELECT EXISTS (SELECT id FROM posts WHERE slug = '?')", slug).Scan(&exists)
+	query := fmt.Sprintf("SELECT EXISTS (SELECT id FROM posts WHERE slug = '%s')", slug)
+	err := pr.DB.QueryRow(query).Scan(&exists)
 	if err != nil {
 		log.Printf("[POST REPO]: Exists err %v", err)
 		return true

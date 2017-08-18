@@ -14,6 +14,7 @@ import (
 type App struct {
 	Config 		config.Config
 	Database 	*database.DB
+	Redis 	*database.RedisDB
 	Router 		*mux.Router
 }
 
@@ -22,9 +23,13 @@ func New(cfg config.Config) *App {
 	if err != nil {
 		log.Fatal(err)
 	}
+	redis, err := database.NewRedisDB(cfg.Redis)
+	if err != nil {
+		log.Fatal(err)
+	}
 	router := routes.NewRouter(db)
 
-	return &App{cfg, db, router}
+	return &App{cfg, db, redis, router}
 }
 
 func (a *App) Run()  {

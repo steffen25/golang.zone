@@ -12,7 +12,7 @@ type DB struct {
 	*sql.DB
 }
 
-func NewDB(dbCfg config.MysqlConfig) (*DB, error) {
+func NewDB(dbCfg config.MySQLConfig) (*DB, error) {
 	//DSN := fmt.Sprintf("%s:%s@unix(/tmp/mysql.sock)/%s?parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName)
 	dataSourceName := fmt.Sprintf("%s:%s@/%s?charset=%s&parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName, dbCfg.Encoding)
 	db, err := sql.Open("mysql", dataSourceName)

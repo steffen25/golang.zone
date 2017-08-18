@@ -6,11 +6,11 @@ import (
 
 	"github.com/steffen25/golang.zone/controllers"
 	"github.com/steffen25/golang.zone/repositories"
-	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/middlewares"
+	"github.com/steffen25/golang.zone/database"
 )
 
-func InitializeRouter(db *database.DB) *mux.Router {
+func NewRouter(db *database.DB) *mux.Router {
 	r := mux.NewRouter()
 	r.PathPrefix("/public").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public/"))))
 	// Repositories

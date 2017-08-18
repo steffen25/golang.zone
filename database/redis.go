@@ -4,6 +4,10 @@ import "github.com/go-redis/redis"
 
 var client *redis.Client
 
+type RedisDB struct {
+	*redis.Client
+}
+
 func RedisConnection() (*redis.Client, error) {
 
 	var err error

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"fmt"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/config"
@@ -18,24 +17,14 @@ type App struct {
 	Router 		*mux.Router
 }
 
-func New() *App {
-	return &App{}
-	// Call the Initialize here instead of in main? make it not exportable?
-}
+func New(cfg config.Config) *App {
+	db, err := database.NewDB(cfg.MySQL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	router := routes.NewRouter(db)
 
-func (a *App) Initialize()  {
-	var err error
-	cfg, err := config.Load("config/app.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	a.Config = cfg
-	db, err := database.NewDB(cfg.Database)
-	if err != nil {
-		log.Fatal(err)
-	}
-	a.Database = db
-	a.Router = routes.InitializeRouter(db)
+	return &App{cfg, db, router}
 }
 
 func (a *App) Run()  {

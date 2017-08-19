@@ -8,14 +8,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/config"
-	"github.com/steffen25/golang.zone/routes"
 )
 
 type App struct {
 	Config 		config.Config
 	Database 	*database.MySQLDB
 	Redis 	*database.RedisDB
-	Router 		*mux.Router
 }
 
 func New(cfg config.Config) *App {
@@ -27,16 +25,15 @@ func New(cfg config.Config) *App {
 	if err != nil {
 		log.Fatal(err)
 	}
-	router := routes.NewRouter(db)
 
-	return &App{cfg, db, redis, router}
+	return &App{cfg, db, redis}
 }
 
-func (a *App) Run()  {
+func (a *App) Run(r *mux.Router)  {
 	port := a.Config.Port
 	addr := fmt.Sprintf(":%v", port)
 	fmt.Printf("APP is listening on port: %d\n", port)
-	log.Fatal(http.ListenAndServe(addr, a.Router))
+	log.Fatal(http.ListenAndServe(addr, r))
 }
 
 func (a *App) IsProd() bool {

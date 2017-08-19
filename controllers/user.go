@@ -11,16 +11,18 @@ import (
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/services"
+	"github.com/steffen25/golang.zone/app"
 )
 
 // Embed a UserDAO/Repository thingy
 type UserController struct {
+	*app.App
 	repositories.UserRepository
 	repositories.PostRepository
 }
 
-func NewUserController(ur repositories.UserRepository, pr repositories.PostRepository) *UserController {
-	return &UserController{ur, pr}
+func NewUserController(a *app.App, ur repositories.UserRepository, pr repositories.PostRepository) *UserController {
+	return &UserController{a, ur, pr}
 }
 
 func (uc *UserController) HelloWorld(w http.ResponseWriter, r *http.Request) {

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"log"
+	
 	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/config"
-	"log"
+	"github.com/steffen25/golang.zone/routes"
 )
 
 func main() {
@@ -12,5 +14,6 @@ func main() {
 		log.Fatal(err)
 	}
 	app := app.New(cfg)
-	app.Run()
+	router := routes.NewRouter(app)
+	app.Run(router)
 }

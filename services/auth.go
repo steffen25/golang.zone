@@ -14,7 +14,7 @@ import (
 	"github.com/dgrijalva/jwt-go/request"
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/config"
-	"github.com/steffen25/golang.zone/database"
+	"github.com/steffen25/golang.zone/app"
 )
 
 type TokenClaims struct {
@@ -31,7 +31,7 @@ const (
 
 type userCtxKeyType string
 
-func GenerateJWT(u *models.User) (string, error) {
+func GenerateJWT(a *app.App, u *models.User) (string, error) {
 	uid := strconv.Itoa(u.ID)
 	authClaims := TokenClaims{
 		jwt.StandardClaims{
@@ -45,25 +45,18 @@ func GenerateJWT(u *models.User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)
 
-	// TODO: Find a better way to pass the config from the App(redundant)
-	cfg, err := config.New("config/app.json")
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-	tokenString, err := token.SignedString([]byte(cfg.JWTSecret))
+	tokenString, err := token.SignedString([]byte(a.Config.JWTSecret))
 	if err != nil {
 		log.Fatal(err)
 		return "", err
 	}
 
-	redis, _ := database.RedisConnection()
 	/*uJson, err := json.Marshal(u)
 	if err != nil {
 		log.Fatal(err)
 		return "", err
 	}*/
-	err = redis.Set(authClaims.Id, u.ID, tokenDuration).Err()
+	err = a.Redis.Set(authClaims.Id, u.ID, tokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
 		return "", err
@@ -72,12 +65,7 @@ func GenerateJWT(u *models.User) (string, error) {
 	return tokenString, nil
 }
 
-func ExtractJti(tokenStr string) (string, error) {
-	cfg, err := config.New("config/app.json")
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
+func ExtractJti(cfg *config.Config, tokenStr string) (string, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -97,12 +85,7 @@ func ExtractJti(tokenStr string) (string, error) {
 	return "", err
 }
 
-func GetTokenFromRequest(r *http.Request) (string, error) {
-	cfg, err := config.New("config/app.json")
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
+func GetTokenFromRequest(cfg *config.Config, r *http.Request) (string, error) {
 	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

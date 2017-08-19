@@ -7,10 +7,11 @@ import (
 
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
-	"github.com/steffen25/golang.zone/database"
+	"github.com/steffen25/golang.zone/app"
 )
 
 type AuthController struct {
+	App *app.App
 	repositories.UserRepository
 }
 
@@ -18,8 +19,8 @@ type Token struct {
 	Token string `json:"token"`
 }
 
-func NewAuthController(us repositories.UserRepository) *AuthController {
-	return &AuthController{us}
+func NewAuthController(a *app.App, us repositories.UserRepository) *AuthController {
+	return &AuthController{a, us}
 }
 
 func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +56,7 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := services.GenerateJWT(u)
+	t, err := services.GenerateJWT(ac.App, u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
@@ -65,15 +66,14 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
-	tokenString, err := services.GetTokenFromRequest(r)
+	tokenString, err := services.GetTokenFromRequest(&ac.App.Config, r)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	redis, _ := database.RedisConnection()
-	jti, err := services.ExtractJti(tokenString)
-	err = redis.Del(jti).Err()
+	jti, err := services.ExtractJti(&ac.App.Config, tokenString)
+	err = ac.App.Redis.Del(jti).Err()
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
@@ -90,10 +90,9 @@ func (ac *AuthController) LogoutAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userId := strconv.Itoa(uid)
-	redis, _ := database.RedisConnection()
-	keys := redis.Keys("*"+userId+".*")
+	keys := ac.App.Redis.Keys("*"+userId+".*")
 	for _, token := range keys.Val() {
-		err := redis.Del(token).Err()
+		err := ac.App.Redis.Del(token).Err()
 		if err != nil {
 			log.Printf("Could not delete token: %s ; error: %v", token, err)
 		}
@@ -103,7 +102,7 @@ func (ac *AuthController) LogoutAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	tokenString, err := services.GetTokenFromRequest(r)
+	tokenString, err := services.GetTokenFromRequest(&ac.App.Config, r)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
 		return
@@ -113,7 +112,7 @@ func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
 		return
 	}
-	jti, err := services.ExtractJti(tokenString)
+	jti, err := services.ExtractJti(&ac.App.Config, tokenString)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
@@ -123,13 +122,13 @@ func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		NewAPIError(&APIError{false, "Could not find user", http.StatusBadRequest}, w)
 		return
 	}
-	token, err := services.GenerateJWT(u)
+	token, err := services.GenerateJWT(ac.App, u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
-	redis, _ := database.RedisConnection()
-	err = redis.Del(jti).Err()
+
+	err = ac.App.Redis.Del(jti).Err()
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return

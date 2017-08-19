@@ -13,13 +13,13 @@ import (
 
 type App struct {
 	Config 		config.Config
-	Database 	*database.DB
+	Database 	*database.MySQLDB
 	Redis 	*database.RedisDB
 	Router 		*mux.Router
 }
 
 func New(cfg config.Config) *App {
-	db, err := database.NewDB(cfg.MySQL)
+	db, err := database.NewMySQLDB(cfg.MySQL)
 	if err != nil {
 		log.Fatal(err)
 	}

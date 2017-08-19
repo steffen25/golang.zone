@@ -19,10 +19,10 @@ type PostRepository interface {
 }
 
 type postRepository struct {
-	*database.DB
+	*database.MySQLDB
 }
 
-func NewPostRepository(db *database.DB) PostRepository {
+func NewPostRepository(db *database.MySQLDB) PostRepository {
 	return &postRepository{db}
 }
 

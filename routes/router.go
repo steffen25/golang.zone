@@ -10,7 +10,7 @@ import (
 	"github.com/steffen25/golang.zone/database"
 )
 
-func NewRouter(db *database.DB) *mux.Router {
+func NewRouter(db *database.MySQLDB) *mux.Router {
 	r := mux.NewRouter()
 	r.PathPrefix("/public").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public/"))))
 	// Repositories

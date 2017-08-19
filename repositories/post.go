@@ -77,7 +77,14 @@ func (pr *postRepository) GetAll() ([]*models.Post, error) {
 }
 
 func (pr *postRepository) FindById(id int) (*models.Post, error) {
-	return nil, nil
+	post := models.Post{}
+
+	err := pr.DB.QueryRow("SELECT id, title, slug, body, created_at, updated_at, user_id FROM posts WHERE id = ?", id).Scan(&post.ID, &post.Title, &post.Slug, &post.Body, &post.CreatedAt, &post.UpdatedAt, &post.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
 }
 
 func (pr *postRepository) FindByUser(u *models.User) ([]*models.Post, error) {
@@ -110,6 +117,35 @@ func (pr *postRepository) Delete(id int) error {
 }
 
 func (pr *postRepository) Update(p *models.Post) error {
+	exists := pr.Exists(p.Slug)
+	var postId int
+	err := pr.DB.QueryRow("SELECT id FROM posts WHERE slug=?", p.Slug).Scan(&postId)
+	if err != nil {
+		return err
+	}
+	if !exists || p.ID == postId {
+		err := pr.updatePost(p)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	// If its not the same post we append the next count number of that slug
+	var slugCount int
+	err = pr.DB.QueryRow("SELECT COUNT(*) FROM posts where slug LIKE ?", "%"+p.Slug+"%").Scan(&slugCount)
+	if err != nil {
+		return err
+	}
+	counter := strconv.Itoa(slugCount)
+	p.Slug = p.Slug+"-"+counter
+
+	err = pr.updatePost(p)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -140,6 +176,20 @@ func (pr *postRepository) createWithSlugCount(p *models.Post) error {
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(p.Title, p.Slug+"-"+counter, p.Body, p.CreatedAt, p.UserID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (pr *postRepository) updatePost(p *models.Post) error {
+	stmt, err := pr.DB.Prepare("UPDATE posts SET title=?, slug=?, body=?, updated_at=?, user_id=? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(p.Title, p.Slug, p.Body, p.UpdatedAt, p.UserID, p.ID)
 	if err != nil {
 		return err
 	}

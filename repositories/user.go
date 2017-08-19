@@ -19,10 +19,10 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	*database.DB
+	*database.MySQLDB
 }
 
-func NewUserRespository(db *database.DB) UserRepository {
+func NewUserRespository(db *database.MySQLDB) UserRepository {
 	return &userRepository{db}
 }
 

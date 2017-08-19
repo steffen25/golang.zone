@@ -46,7 +46,7 @@ func GenerateJWT(u *models.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)
 
 	// TODO: Find a better way to pass the config from the App(redundant)
-	cfg, err := config.Load("config/app.json")
+	cfg, err := config.New("config/app.json")
 	if err != nil {
 		log.Fatal(err)
 		return "", err
@@ -73,7 +73,7 @@ func GenerateJWT(u *models.User) (string, error) {
 }
 
 func ExtractJti(tokenStr string) (string, error) {
-	cfg, err := config.Load("config/app.json")
+	cfg, err := config.New("config/app.json")
 	if err != nil {
 		log.Fatal(err)
 		return "", err
@@ -98,7 +98,7 @@ func ExtractJti(tokenStr string) (string, error) {
 }
 
 func GetTokenFromRequest(r *http.Request) (string, error) {
-	cfg, err := config.Load("config/app.json")
+	cfg, err := config.New("config/app.json")
 	if err != nil {
 		log.Fatal(err)
 		return "", err

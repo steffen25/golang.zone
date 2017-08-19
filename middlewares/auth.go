@@ -16,7 +16,7 @@ import (
 // TODO: Create error struct that we can use instead of calling controllers?
 func RequireAuthentication(next http.HandlerFunc, admin bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cfg, err := config.Load("config/app.json")
+		cfg, err := config.New("config/app.json")
 		if err != nil {
 			log.Fatal(err)
 		}

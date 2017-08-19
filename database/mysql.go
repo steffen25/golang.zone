@@ -8,11 +8,11 @@ import (
 	"github.com/steffen25/golang.zone/config"
 )
 
-type DB struct {
+type MySQLDB struct {
 	*sql.DB
 }
 
-func NewDB(dbCfg config.MysqlConfig) (*DB, error) {
+func NewMySQLDB(dbCfg config.MySQLConfig) (*MySQLDB, error) {
 	//DSN := fmt.Sprintf("%s:%s@unix(/tmp/mysql.sock)/%s?parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName)
 	dataSourceName := fmt.Sprintf("%s:%s@/%s?charset=%s&parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName, dbCfg.Encoding)
 	db, err := sql.Open("mysql", dataSourceName)
@@ -20,5 +20,5 @@ func NewDB(dbCfg config.MysqlConfig) (*DB, error) {
 		return nil, err
 	}
 
-	return &DB{db}, nil
+	return &MySQLDB{db}, nil
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/config"
-	"github.com/steffen25/golang.zone/routes"
 )
 
 type App struct {
@@ -27,9 +26,8 @@ func New(cfg config.Config) *App {
 	if err != nil {
 		log.Fatal(err)
 	}
-	router := routes.NewRouter(db)
 
-	return &App{cfg, db, redis, router}
+	return &App{cfg, db, redis, nil}
 }
 
 func (a *App) Run()  {

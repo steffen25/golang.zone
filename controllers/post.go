@@ -9,14 +9,16 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/repositories"
+	"github.com/steffen25/golang.zone/app"
 )
 
 type PostController struct {
+	*app.App
 	repositories.PostRepository
 }
 
-func NewPostController(pr repositories.PostRepository) *PostController {
-	return &PostController{pr}
+func NewPostController(a *app.App, pr repositories.PostRepository) *PostController {
+	return &PostController{a, pr}
 }
 
 func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {

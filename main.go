@@ -14,6 +14,6 @@ func main() {
 		log.Fatal(err)
 	}
 	app := app.New(cfg)
-	app.Router = routes.NewRouter(app)
-	app.Run()
+	router := routes.NewRouter(app)
+	app.Run(router)
 }

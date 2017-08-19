@@ -14,7 +14,6 @@ type App struct {
 	Config 		config.Config
 	Database 	*database.MySQLDB
 	Redis 	*database.RedisDB
-	Router 		*mux.Router
 }
 
 func New(cfg config.Config) *App {
@@ -27,14 +26,14 @@ func New(cfg config.Config) *App {
 		log.Fatal(err)
 	}
 
-	return &App{cfg, db, redis, nil}
+	return &App{cfg, db, redis}
 }
 
-func (a *App) Run()  {
+func (a *App) Run(r *mux.Router)  {
 	port := a.Config.Port
 	addr := fmt.Sprintf(":%v", port)
 	fmt.Printf("APP is listening on port: %d\n", port)
-	log.Fatal(http.ListenAndServe(addr, a.Router))
+	log.Fatal(http.ListenAndServe(addr, r))
 }
 
 func (a *App) IsProd() bool {

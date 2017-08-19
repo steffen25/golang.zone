@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"regexp"
+	"strings"
 )
 
 func IsEmail(email string) bool {
@@ -11,4 +12,9 @@ func IsEmail(email string) bool {
 	}
 
 	return true
+}
+
+func generateSlug(title string) string {
+	re := regexp.MustCompile("[^a-z0-9]+")
+	return strings.Trim(re.ReplaceAllString(strings.ToLower(title), "-"), "-")
 }

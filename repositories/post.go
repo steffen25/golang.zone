@@ -6,6 +6,7 @@ import (
 
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/database"
+	"database/sql"
 )
 
 type PostRepository interface {
@@ -118,12 +119,24 @@ func (pr *postRepository) Delete(id int) error {
 
 func (pr *postRepository) Update(p *models.Post) error {
 	exists := pr.Exists(p.Slug)
+	if !exists {
+		err := pr.updatePost(p)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	// Post do exists
+	// Now we want to find out if the slug is the post we are updating
 	var postId int
 	err := pr.DB.QueryRow("SELECT id FROM posts WHERE slug=?", p.Slug).Scan(&postId)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
-	if !exists || p.ID == postId {
+
+	if p.ID == postId {
 		err := pr.updatePost(p)
 		if err != nil {
 			return err

@@ -26,6 +26,7 @@ func NewRouter(a *app.App) *mux.Router {
 
 	api := r.PathPrefix("/api/v1").Subrouter()
 	// Users
+	api.HandleFunc("/sms", middlewares.Logger(uc.GetSms)).Methods(http.MethodPost)
 	api.HandleFunc("/users", middlewares.Logger(uc.GetAll)).Methods(http.MethodGet)
 	api.HandleFunc("/users", middlewares.Logger(uc.Create)).Methods(http.MethodPost)
 	api.HandleFunc("/users/{id}", middlewares.Logger(uc.GetById)).Methods(http.MethodGet)

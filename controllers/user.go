@@ -131,6 +131,7 @@ func (uc *UserController) GetSms(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s", err)
 	}
 
+	log.Println(json)
 	fmt.Fprintf(w,"%s",json)
 }
 

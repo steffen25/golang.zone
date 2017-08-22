@@ -12,6 +12,7 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/app"
+	"io/ioutil"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -20,6 +21,7 @@ type UserController struct {
 	repositories.UserRepository
 	repositories.PostRepository
 }
+
 
 func NewUserController(a *app.App, ur repositories.UserRepository, pr repositories.PostRepository) *UserController {
 	return &UserController{a, ur, pr}
@@ -119,6 +121,17 @@ func (uc *UserController) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	NewAPIResponse(&APIResponse{Success: true, Data:users}, w, http.StatusOK)
+}
+
+func (uc *UserController) GetSms(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	json, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Fprintf(w, "%s", err)
+	}
+
+	fmt.Fprintf(w,"%s",json)
 }
 
 func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {

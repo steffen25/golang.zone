@@ -40,8 +40,5 @@ func New(path string) (Config, error) {
 		log.Fatal(err)
 	}
 
-	// These are used in different packages so instead of reading the cfg over and over we put them in os.env
-	os.Setenv("jwt_secret", cfg.JWTSecret)
-
 	return cfg, nil
 }

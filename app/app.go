@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/config"
-	"os"
 )
 
 type App struct {

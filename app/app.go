@@ -31,7 +31,7 @@ func New(cfg config.Config) *App {
 }
 
 func (a *App) Run(r *mux.Router)  {
-	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With"})
+	headersOk := handlers.AllowedHeaders([]string{"Content-Type", "X-Requested-With"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 	port := a.Config.Port

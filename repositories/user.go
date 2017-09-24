@@ -35,7 +35,7 @@ func (ur *userRepository) Create(u *models.User) error {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(u.Name, u.Email, u.Password, u.CreatedAt)
+	_, err = stmt.Exec(u.Name, u.Email, u.Password, u.CreatedAt.Format("20060102150405"))
 	if err != nil {
 		return err
 	}

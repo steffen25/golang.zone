@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/handlers"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/config"
 )
@@ -33,7 +34,7 @@ func (a *App) Run(r *mux.Router)  {
 	port := a.Config.Port
 	addr := fmt.Sprintf(":%v", port)
 	fmt.Printf("APP is listening on port: %d\n", port)
-	log.Fatal(http.ListenAndServe(addr, r))
+	log.Fatal(http.ListenAndServe(addr, handlers.CORS()(r)))
 }
 
 func (a *App) IsProd() bool {

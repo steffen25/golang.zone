@@ -90,7 +90,7 @@ func (pc *PostController) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	post, err := pc.PostRepository.FindById(postId)
 	if err != nil {
-		// user was not found
+		// post was not found
 		NewAPIError(&APIError{false, "Could not find post", http.StatusNotFound}, w)
 		return
 	}

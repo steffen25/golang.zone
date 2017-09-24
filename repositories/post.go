@@ -43,7 +43,6 @@ func (pr *postRepository) Create(p *models.Post) error {
 		return err
 	}
 	defer stmt.Close()
-
 	_, err = stmt.Exec(p.Title, p.Slug, p.Body, p.CreatedAt.Format("20060102150405"), p.UserID)
 	if err != nil {
 		return err

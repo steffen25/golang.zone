@@ -15,3 +15,6 @@
 
 # App environment variables
 config/app.json
+
+# glide
+/vendor/*

@@ -1,0 +1,58 @@
+version: '3.1'
+
+services:
+
+  app_api:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: app_api
+    working_dir: /go/src/github.com/steffen25/golang.zone
+    command: /bin/sh -c "glide install && go build && ./golang.zone"
+    depends_on:
+      - app_mysql
+      - app_redis
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/go/src/github.com/steffen25/golang.zone/
+      - app_api_src_data:/go/src
+    networks:
+      - app_network
+    environment:
+      - GOPATH=/go
+
+  app_mysql:
+    image: mysql
+    container_name: app_mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: "rootpassword"
+      MYSQL_DATABASE: "app"
+      MYSQL_USER: "app"
+      MYSQL_PASSWORD: "secretpassword"
+    volumes:
+      - app_mysql_data:/var/lib/mysql
+    networks:
+      - app_network
+
+  app_redis:
+    image: redis
+    container_name: app_redis
+    volumes:
+      - app_redis_data:/data
+    networks:
+      - app_network
+
+volumes:
+  app_mysql_data:
+    driver: local
+  app_api_src_data:
+    driver: local
+  app_redis_data:
+    driver: local
+
+networks:
+  app_network:
+    driver: bridge

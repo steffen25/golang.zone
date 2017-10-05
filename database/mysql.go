@@ -1,8 +1,9 @@
 package database
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
+	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/steffen25/golang.zone/config"
@@ -14,7 +15,7 @@ type MySQLDB struct {
 
 func NewMySQLDB(dbCfg config.MySQLConfig) (*MySQLDB, error) {
 	//DSN := fmt.Sprintf("%s:%s@unix(/tmp/mysql.sock)/%s?parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName)
-	dataSourceName := fmt.Sprintf("%s:%s@/%s?charset=%s&parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.DatabaseName, dbCfg.Encoding)
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true", dbCfg.Username, dbCfg.Password, dbCfg.Host, dbCfg.Port, dbCfg.DatabaseName, dbCfg.Encoding)
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
 		return nil, err

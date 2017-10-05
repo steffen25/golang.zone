@@ -1,0 +1,28 @@
+golang-zone-api:
+  image: golang-zone-api
+  container_name: golang-zone-api
+  ports:
+    - "8080:8080"
+  environment:
+    LINK_ALIAS: golang-zone-mysql
+    LINK_ALIAS: golang-zone-redis
+  links:
+   - golang-zone-mysql
+   - golang-zone-redis
+golang-zone-mysql:
+  image: mysql:latest
+  ports:
+   - "3306:3306"
+  container_name: golang-zone-mysql
+  environment:
+    MYSQL_ROOT_PASSWORD: root
+    MYSQL_USER: steffen
+    MYSQL_PASSWORD: root
+    MYSQL_DATABASE: golang-zone
+  volumes:
+    - ./golang-zone-dump.sql:/docker-entrypoint-initdb.d/golang.sql
+golang-zone-redis:
+  image: redis:latest
+  container_name: golang-zone-redis
+  ports:
+   - "6379:6379"

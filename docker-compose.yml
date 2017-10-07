@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
     container_name: app_api
     working_dir: /go/src/github.com/steffen25/golang.zone
-    command: /bin/sh -c "glide install && goose -dir ./migrations mysql "app:password@(app_mysql:3306)/app" up && go run *.go"
+    command: /bin/sh -c "glide install && go run *.go"
     depends_on:
       - app_mysql
       - app_redis

@@ -1,0 +1,18 @@
+package: github.com/steffen25/golang.zone
+import:
+- package: github.com/dgrijalva/jwt-go
+  subpackages:
+  - request
+- package: github.com/go-redis/redis
+- package: github.com/go-sql-driver/mysql
+- package: github.com/gorilla/handlers
+- package: github.com/gorilla/mux
+- package: github.com/jinzhu/gorm
+- package: github.com/satori/go.uuid
+- package: golang.org/x/crypto
+  subpackages:
+  - bcrypt
+- package: github.com/pressly/goose
+  version: v2.1.0
+  subpackages:
+  - cmd/goose

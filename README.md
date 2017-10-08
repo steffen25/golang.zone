@@ -1,7 +1,7 @@
 # golang.zone
 Home of golang.zone
 
-This repository holds the files for the REST API of https://golang.zone 
+This repository holds the files for the REST API of https://golang.zone
 
 You need to make a config file in the config directory - below is an example of what it could look like
 ```json
@@ -72,3 +72,17 @@ Misc:
 todo
 
 
+### Docker Development
+Run the following commands only before boostrapping the application.
+```sh
+# Migrate database
+docker-compose run --rm --name app -p 8080:8080 app_api bash
+# Inside the app container
+# TODO: Clean up the migration
+goose -dir ./db/migrations/ mysql "app:password@(app_mysql:3306)/app" up
+```
+
+Development - Since linking the local folder to container we can edit code and run container.
+```sh
+docker-compose up
+```

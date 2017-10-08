@@ -1,0 +1,37 @@
+hash: ffc6e428169c52c755b7d8e1bf3ad8a93a44743b732f46d7f51d413db9744a85
+updated: 2017-10-06T01:33:43.307345862Z
+imports:
+- name: github.com/dgrijalva/jwt-go
+  version: a539ee1a749a2b895533f979515ac7e6e0f5b650
+  subpackages:
+  - request
+- name: github.com/go-redis/redis
+  version: 9c20773cb24624a4ad05cddb60583b61f4ffa701
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
+- name: github.com/go-sql-driver/mysql
+  version: a8b7ed4454a6a4f98f85d3ad558cd6d97cec6959
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/handlers
+  version: a4d79d4487c2430a17d9dc8a1f74d1a6ed6908ca
+- name: github.com/gorilla/mux
+  version: 3f19343c7d9ce75569b952758bd236af94956061
+- name: github.com/jinzhu/gorm
+  version: 3a9e91ab372120a0e35b518430255308e3d8d5ea
+- name: github.com/pressly/goose
+  version: 056a4d47dcc4d67fa3947a4f13945a5c690e568b
+  subpackages:
+  - cmd/goose
+- name: github.com/satori/go.uuid
+  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- name: golang.org/x/crypto
+  version: 9419663f5a44be8b34ca85f08abc5fe1be11f8a3
+  subpackages:
+  - bcrypt
+  - blowfish
+testImports: []

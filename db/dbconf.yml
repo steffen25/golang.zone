@@ -1,0 +1,11 @@
+test:
+  driver: mysql
+  open: $TEST_DATABSE_URL
+
+development:
+  driver: mysql
+  open: user=app password=password dbname=app host=app_mysql:3306
+
+production:
+  driver: mysql
+  open: $PRODUCTION_DATABSE_URL

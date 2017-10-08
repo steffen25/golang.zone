@@ -8,13 +8,15 @@ You need to make a config file in the config directory - below is an example of 
 {
   "env": "local",
   "mysql": {
+    "host": "app_mysql"
     "username": "root",
     "password": "root",
     "database": "database_name",
     "encoding": "utf8mb4"
+    "port": "3306"
   },
   "redis": {
-    "host": "localhost",
+    "host": "app_redis",
     "port": 6379
   },
   "port": 8080,

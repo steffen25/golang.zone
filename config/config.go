@@ -12,6 +12,7 @@ type MySQLConfig struct {
 	DatabaseName string `json:"database"`
 	Encoding     string `json:"encoding"`
 	Host         string `json:"host"`
+	Port         string `json:"port"`
 }
 
 type RedisConfig struct {

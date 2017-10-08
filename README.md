@@ -8,11 +8,11 @@ You need to make a config file in the config directory - below is an example of 
 {
   "env": "local",
   "mysql": {
-    "host": "app_mysql"
+    "host": "app_mysql",
     "username": "root",
     "password": "root",
     "database": "database_name",
-    "encoding": "utf8mb4"
+    "encoding": "utf8mb4",
     "port": "3306"
   },
   "redis": {

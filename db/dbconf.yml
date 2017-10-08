@@ -4,7 +4,7 @@ test:
 
 development:
   driver: mysql
-  open: $DATABSE_URL
+  open: user=app password=password dbname=app host=app_mysql:3306
 
 production:
   driver: mysql

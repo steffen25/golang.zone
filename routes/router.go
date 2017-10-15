@@ -8,6 +8,7 @@ import (
 	"github.com/steffen25/golang.zone/controllers"
 	"github.com/steffen25/golang.zone/middlewares"
 	"github.com/steffen25/golang.zone/repositories"
+	"github.com/steffen25/golang.zone/services"
 )
 
 func NewRouter(a *app.App) *mux.Router {
@@ -17,8 +18,11 @@ func NewRouter(a *app.App) *mux.Router {
 	ur := repositories.NewUserRespository(a.Database)
 	pr := repositories.NewPostRepository(a.Database)
 
+	// Services
+	jwtAuth := services.NewJWTAuthService(&a.Config.JWT, a.Redis)
+
 	// Controllers
-	ac := controllers.NewAuthController(a, ur)
+	ac := controllers.NewAuthController(a, ur, jwtAuth)
 	uc := controllers.NewUserController(a, ur, pr)
 	pc := controllers.NewPostController(a, pr)
 
@@ -26,7 +30,6 @@ func NewRouter(a *app.App) *mux.Router {
 
 	api := r.PathPrefix("/api/v1").Subrouter()
 	// Users
-	api.HandleFunc("/sms", middlewares.Logger(uc.GetSms)).Methods(http.MethodPost)
 	api.HandleFunc("/users", middlewares.Logger(uc.GetAll)).Methods(http.MethodGet)
 	api.HandleFunc("/users", middlewares.Logger(uc.Create)).Methods(http.MethodPost)
 	api.HandleFunc("/users/{id}", middlewares.Logger(uc.GetById)).Methods(http.MethodGet)

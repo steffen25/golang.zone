@@ -1,18 +1,17 @@
 package controllers
 
 import (
-	"net/http"
+	"fmt"
 	"github.com/gorilla/mux"
+	"log"
+	"net/http"
 	"strconv"
 	"time"
-	"fmt"
-	"log"
 
-	"github.com/steffen25/golang.zone/repositories"
-	"github.com/steffen25/golang.zone/models"
-	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/app"
-	"io/ioutil"
+	"github.com/steffen25/golang.zone/models"
+	"github.com/steffen25/golang.zone/repositories"
+	"github.com/steffen25/golang.zone/services"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -21,7 +20,6 @@ type UserController struct {
 	repositories.UserRepository
 	repositories.PostRepository
 }
-
 
 func NewUserController(a *app.App, ur repositories.UserRepository, pr repositories.PostRepository) *UserController {
 	return &UserController{a, ur, pr}
@@ -40,7 +38,7 @@ func (uc *UserController) Profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Data:uid}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Data: uid}, w, http.StatusOK)
 }
 
 func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
@@ -95,9 +93,9 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u := &models.User{
-		Name: name,
-		Email: email,
-		Admin: false,
+		Name:      name,
+		Email:     email,
+		Admin:     false,
 		CreatedAt: time.Now(),
 	}
 	u.SetPassword(pw)
@@ -120,19 +118,7 @@ func (uc *UserController) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Data:users}, w, http.StatusOK)
-}
-
-func (uc *UserController) GetSms(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	json, err := ioutil.ReadAll(r.Body)
-
-	if err != nil {
-		fmt.Fprintf(w, "%s", err)
-	}
-
-	log.Println(string(json))
-	fmt.Fprintf(w,"%s",json)
+	NewAPIResponse(&APIResponse{Success: true, Data: users}, w, http.StatusOK)
 }
 
 func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +135,7 @@ func (uc *UserController) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Data:user}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Data: user}, w, http.StatusOK)
 }
 
 func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {

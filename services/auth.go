@@ -1,25 +1,25 @@
 package services
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"log"
-	"net/http"
-	"strconv"
-	"time"
-
 	"bufio"
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
 	"github.com/satori/go.uuid"
-	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/config"
+	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/models"
-	"os"
 )
 
 type TokenClaims struct {
@@ -28,27 +28,58 @@ type TokenClaims struct {
 	Admin bool `json:"admin"`
 }
 
+type AccessToken struct {
+	AccessToken string `json:"accessToken"`
+}
+
+type RefreshToken struct {
+	RefreshToken string `json:"refreshToken"`
+}
+
+type Tokens struct {
+	AccessToken  string  `json:"accessToken"`
+	RefreshToken string  `json:"refreshToken"`
+	ExpiresIn    float64 `json:"expiresIn"`
+	TokenType    string  `json:"tokenType"`
+}
+
 type userCtxKeyType string
 
 const (
-	tokenDuration                       = time.Hour
-	refreshTokenDuration                = time.Hour * 72
+	TokenDuration                       = time.Hour
+	RefreshTokenDuration                = time.Hour * 72
+	TokenType                           = "Bearer"
 	userCtxKey           userCtxKeyType = "user"
 	userIdCtxKey         userCtxKeyType = "userId"
 )
 
-type JWTAuthService struct {
+type JWTAuthService interface {
+	GenerateAccessToken(u *models.User) (string, error)
+	GenerateRefreshToken(u *models.User) (string, error)
+}
+
+type jwtAuthService struct {
 	secret     string
 	privateKey *rsa.PrivateKey
 	PublicKey  *rsa.PublicKey
+	Redis      *database.RedisDB
 }
 
-func GenerateJWT(a *app.App, u *models.User) (string, error) {
+func NewJWTAuthService(jwtCfg *config.JWTConfig, redis *database.RedisDB) JWTAuthService {
+	return &jwtAuthService{
+		jwtCfg.Secret,
+		getPrivateKey(jwtCfg),
+		getPublicKey(jwtCfg),
+		redis,
+	}
+}
+
+func (jwtService *jwtAuthService) GenerateAccessToken(u *models.User) (string, error) {
 	uid := strconv.Itoa(u.ID)
 	authClaims := TokenClaims{
 		jwt.StandardClaims{
 			Id:        uid + "." + uuid.NewV4().String(),
-			ExpiresAt: time.Now().Add(tokenDuration).Unix(),
+			ExpiresAt: time.Now().Add(TokenDuration).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 		u.ID,
@@ -57,7 +88,7 @@ func GenerateJWT(a *app.App, u *models.User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)
 
-	tokenString, err := token.SignedString([]byte(a.Config.JWT.Secret))
+	tokenString, err := token.SignedString([]byte(jwtService.secret))
 	if err != nil {
 		log.Fatal(err)
 		return "", err
@@ -68,7 +99,7 @@ func GenerateJWT(a *app.App, u *models.User) (string, error) {
 		log.Fatal(err)
 		return "", err
 	}*/
-	err = a.Redis.Set(authClaims.Id, u.ID, tokenDuration).Err()
+	err = jwtService.Redis.Set(authClaims.Id, u.ID, TokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
 		return "", err
@@ -78,35 +109,12 @@ func GenerateJWT(a *app.App, u *models.User) (string, error) {
 }
 
 // TODO: make something like this https://github.com/brainattica/golang-jwt-authentication-api-sample/blob/master/core/authentication/jwt_backend.go
-func GenerateRefreshToken(a *app.App, u *models.User) (string, error) {
-	privateKeyFile, err := os.Open(a.Config.JWT.PrivateKeyPath)
-	if err != nil {
-		panic(err)
-		return "", err
-	}
-
-	pemfileinfo, _ := privateKeyFile.Stat()
-	var size int64 = pemfileinfo.Size()
-	pembytes := make([]byte, size)
-
-	buffer := bufio.NewReader(privateKeyFile)
-	_, err = buffer.Read(pembytes)
-
-	data, _ := pem.Decode([]byte(pembytes))
-
-	privateKeyFile.Close()
-
-	privateKeyImported, err := x509.ParsePKCS1PrivateKey(data.Bytes)
-
-	if err != nil {
-		panic(err)
-		return "", err
-	}
+func (jwtService *jwtAuthService) GenerateRefreshToken(u *models.User) (string, error) {
 	uid := strconv.Itoa(u.ID)
 	authClaims := TokenClaims{
 		jwt.StandardClaims{
 			Id:        uid + "." + uuid.NewV4().String(),
-			ExpiresAt: time.Now().Add(refreshTokenDuration).Unix(),
+			ExpiresAt: time.Now().Add(RefreshTokenDuration).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 		u.ID,
@@ -115,18 +123,13 @@ func GenerateRefreshToken(a *app.App, u *models.User) (string, error) {
 
 	token := jwt.New(jwt.SigningMethodRS512)
 	token.Claims = authClaims
-	tokenString, err := token.SignedString(privateKeyImported)
+	tokenString, err := token.SignedString(jwtService.privateKey)
 	if err != nil {
 		panic(err)
 		return "", err
 	}
 
-	/*uJson, err := json.Marshal(u)
-	  if err != nil {
-	  	log.Fatal(err)
-	  	return "", err
-	  }*/
-	err = a.Redis.Set(authClaims.Id, u.ID, refreshTokenDuration).Err()
+	err = jwtService.Redis.Set(authClaims.Id, u.ID, RefreshTokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
 		return "", err
@@ -288,8 +291,66 @@ func UserFromContext(ctx context.Context) (*models.User, error) {
 	u, ok := ctx.Value(userCtxKey).(*models.User)
 	if !ok {
 		log.Println("Context missing user")
-		return nil, errors.New("[SERVICE]: Context missing userID")
+		return nil, errors.New("[SERVICE]: Context missing user")
 	}
 
 	return u, nil
+}
+
+func getPrivateKey(jwtConfig *config.JWTConfig) *rsa.PrivateKey {
+	privateKeyFile, err := os.Open(jwtConfig.PrivateKeyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pemfileinfo, _ := privateKeyFile.Stat()
+	var size int64 = pemfileinfo.Size()
+	pembytes := make([]byte, size)
+
+	buffer := bufio.NewReader(privateKeyFile)
+	_, err = buffer.Read(pembytes)
+
+	data, _ := pem.Decode([]byte(pembytes))
+
+	privateKeyFile.Close()
+
+	privateKeyImported, err := x509.ParsePKCS1PrivateKey(data.Bytes)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return privateKeyImported
+}
+
+func getPublicKey(jwtConfig *config.JWTConfig) *rsa.PublicKey {
+	publicKeyFile, err := os.Open(jwtConfig.PublicKeyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pemfileinfo, _ := publicKeyFile.Stat()
+	var size int64 = pemfileinfo.Size()
+	pembytes := make([]byte, size)
+
+	buffer := bufio.NewReader(publicKeyFile)
+	_, err = buffer.Read(pembytes)
+
+	data, _ := pem.Decode([]byte(pembytes))
+
+	publicKeyFile.Close()
+
+	publicKeyImported, err := x509.ParsePKIXPublicKey(data.Bytes)
+
+	if err != nil {
+		panic(err)
+	}
+
+	rsaPub, ok := publicKeyImported.(*rsa.PublicKey)
+
+	if !ok {
+		log.Fatal(err)
+	}
+
+	return rsaPub
 }

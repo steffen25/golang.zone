@@ -13,27 +13,14 @@ import (
 type AuthController struct {
 	App *app.App
 	repositories.UserRepository
+	jwtService services.JWTAuthService
 }
 
-type AccessToken struct {
-	AccessToken string `json:"accessToken"`
-}
-
-type RefreshToken struct {
-	RefreshToken string `json:"refreshToken"`
-}
-
-type Tokens struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-}
-
-func NewAuthController(a *app.App, us repositories.UserRepository) *AuthController {
-	return &AuthController{a, us}
+func NewAuthController(a *app.App, us repositories.UserRepository, jwtService services.JWTAuthService) *AuthController {
+	return &AuthController{a, us, jwtService}
 }
 
 func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
-
 	j, err := GetJSON(r.Body)
 	if err != nil {
 		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
@@ -65,19 +52,26 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := services.GenerateJWT(ac.App, u)
+	accessToken, err := ac.jwtService.GenerateAccessToken(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	refreshToken, err := services.GenerateRefreshToken(ac.App, u)
+	refreshToken, err := ac.jwtService.GenerateRefreshToken(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: Tokens{accessToken, refreshToken}}, w, http.StatusOK)
+	tokens := services.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresIn:    services.TokenDuration.Seconds(),
+		TokenType:    services.TokenType,
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: tokens}, w, http.StatusOK)
 }
 
 func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
@@ -137,13 +131,13 @@ func (ac *AuthController) RefreshTokens(w http.ResponseWriter, r *http.Request) 
 		NewAPIError(&APIError{false, "Could not find user", http.StatusBadRequest}, w)
 		return
 	}
-	accessToken, err := services.GenerateJWT(ac.App, u)
+	accessToken, err := ac.jwtService.GenerateAccessToken(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	refreshToken, err := services.GenerateRefreshToken(ac.App, u)
+	refreshToken, err := ac.jwtService.GenerateRefreshToken(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
@@ -155,5 +149,12 @@ func (ac *AuthController) RefreshTokens(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: Tokens{accessToken, refreshToken}}, w, http.StatusOK)
+	tokens := services.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresIn:    services.TokenDuration.Seconds(),
+		TokenType:    services.TokenType,
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: tokens}, w, http.StatusOK)
 }

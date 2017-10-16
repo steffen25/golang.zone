@@ -1,30 +1,26 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
-	"log"
 
+	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
-	"github.com/steffen25/golang.zone/app"
 )
 
 type AuthController struct {
 	App *app.App
 	repositories.UserRepository
+	jwtService services.JWTAuthService
 }
 
-type Token struct {
-	Token string `json:"token"`
-}
-
-func NewAuthController(a *app.App, us repositories.UserRepository) *AuthController {
-	return &AuthController{a, us}
+func NewAuthController(a *app.App, us repositories.UserRepository, jwtService services.JWTAuthService) *AuthController {
+	return &AuthController{a, us, jwtService}
 }
 
 func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
-
 	j, err := GetJSON(r.Body)
 	if err != nil {
 		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
@@ -56,13 +52,26 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := services.GenerateJWT(ac.App, u)
+	accessToken, err := ac.jwtService.GenerateAccessToken(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: Token{t}}, w, http.StatusOK)
+	refreshToken, err := ac.jwtService.GenerateRefreshToken(u)
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
+		return
+	}
+
+	tokens := services.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresIn:    services.TokenDuration.Seconds(),
+		TokenType:    services.TokenType,
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: tokens}, w, http.StatusOK)
 }
 
 func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +99,7 @@ func (ac *AuthController) LogoutAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userId := strconv.Itoa(uid)
-	keys := ac.App.Redis.Keys("*"+userId+".*")
+	keys := ac.App.Redis.Keys("*" + userId + ".*")
 	for _, token := range keys.Val() {
 		err := ac.App.Redis.Del(token).Err()
 		if err != nil {
@@ -101,8 +110,8 @@ func (ac *AuthController) LogoutAll(w http.ResponseWriter, r *http.Request) {
 	NewAPIResponse(&APIResponse{Success: true, Message: "Logout successful"}, w, http.StatusOK)
 }
 
-func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	tokenString, err := services.GetTokenFromRequest(&ac.App.Config, r)
+func (ac *AuthController) RefreshTokens(w http.ResponseWriter, r *http.Request) {
+	tokenString, err := services.GetRefreshTokenFromRequest(&ac.App.Config, r)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
 		return
@@ -112,7 +121,7 @@ func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
 		return
 	}
-	jti, err := services.ExtractJti(&ac.App.Config, tokenString)
+	jti, err := services.ExtractRefreshTokenJti(&ac.App.Config, tokenString)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
@@ -122,7 +131,13 @@ func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		NewAPIError(&APIError{false, "Could not find user", http.StatusBadRequest}, w)
 		return
 	}
-	token, err := services.GenerateJWT(ac.App, u)
+	accessToken, err := ac.jwtService.GenerateAccessToken(u)
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
+		return
+	}
+
+	refreshToken, err := ac.jwtService.GenerateRefreshToken(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
@@ -134,5 +149,12 @@ func (ac *AuthController) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: Token{token}}, w, http.StatusOK)
+	tokens := services.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresIn:    services.TokenDuration.Seconds(),
+		TokenType:    services.TokenType,
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: tokens}, w, http.StatusOK)
 }

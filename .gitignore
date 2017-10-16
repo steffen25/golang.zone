@@ -15,6 +15,8 @@
 
 # App environment variables
 config/app.json
+config/api.rsa.pub
+config/api.rsa
 
 # glide
 /vendor/*

@@ -20,12 +20,18 @@ type RedisConfig struct {
 	Post int    `json:"port"`
 }
 
+type JWTConfig struct {
+	Secret         string `json:"secret"`
+	PublicKeyPath  string `json:"public_key_path"`
+	PrivateKeyPath string `json:"private_key_path"`
+}
+
 type Config struct {
-	Env       string      `json:"env"`
-	MySQL     MySQLConfig `json:"mysql"`
-	Redis     RedisConfig `json:"redis"`
-	Port      int         `json:"port"`
-	JWTSecret string      `json:"jwt_secret"`
+	Env   string      `json:"env"`
+	MySQL MySQLConfig `json:"mysql"`
+	Redis RedisConfig `json:"redis"`
+	JWT   JWTConfig   `json:"jwt"`
+	Port  int         `json:"port"`
 }
 
 // New creates a new config by reading a json file that matches the types above

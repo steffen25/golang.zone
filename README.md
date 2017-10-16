@@ -19,8 +19,12 @@ You need to make a config file in the config directory - below is an example of 
     "host": "app_redis",
     "port": 6379
   },
-  "port": 8080,
-  "jwt_secret": "secret"
+  "jwt": {
+      "secret": "secret",
+      "public_key_path": "config/api.rsa.pub", // openssl genrsa -out api.rsa keysize
+      "private_key_path": "config/api.rsa" // openssl rsa -in api.rsa -pubout > api.rsa.pub
+  ,
+  "port": 8080
 }
 ```
 

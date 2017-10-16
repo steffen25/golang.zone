@@ -23,7 +23,7 @@ You need to make a config file in the config directory - below is an example of 
       "secret": "secret",
       "public_key_path": "config/api.rsa.pub",
       "private_key_path": "config/api.rsa"
-  ,
+  },
   "port": 8080
 }
 ```

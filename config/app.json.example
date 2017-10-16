@@ -12,6 +12,10 @@
     "host": "app_redis",
     "port": 6379
   },
-  "port": 8080,
-  "jwt_secret": "secret"
+  "jwt": {
+      "secret": "secret",
+      "public_key_path": "config/api.rsa.pub",
+      "private_key_path": "config/api.rsa"
+  ,
+  "port": 8080
 }

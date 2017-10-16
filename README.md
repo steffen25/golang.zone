@@ -19,10 +19,21 @@ You need to make a config file in the config directory - below is an example of 
     "host": "app_redis",
     "port": 6379
   },
-  "port": 8080,
-  "jwt_secret": "secret"
+  "jwt": {
+      "secret": "secret",
+      "public_key_path": "config/api.rsa.pub",
+      "private_key_path": "config/api.rsa"
+  ,
+  "port": 8080
 }
 ```
+Generate private key
+
+- openssl genrsa -out api.rsa keysize(2048 or 4096)
+
+Generate public key
+- openssl rsa -in api.rsa -pubout > api.rsa.pub
+
 
 ### Prerequisites
 - Go
@@ -48,6 +59,8 @@ Posts:
 | ------------- 								|:-------------:	| -----:|
 | http://127.0.0.1:8080/api/v1/posts      		| GET 				| Returns an array of posts |
 | http://127.0.0.1:8080/api/v1/posts      		| POST 				| Endpoint to create a post - proctected by a auth middleware that requires the user to be authenticated and be an admin |
+| http://127.0.0.1:8080/api/v1/posts/{id}      	| GET 				| Endpoint to retrieve a post specified by an id |
+| http://127.0.0.1:8080/api/v1/posts/{slug}     | GET 				| Endpoint to retrieve a post specified by a slug |
 | http://127.0.0.1:8080/api/v1/posts/{id}      	| PUT 				| Endpoint to update a specific post - proctected by a auth middleware that requires the user to be authenticated and be an admin |
 
 Auth:

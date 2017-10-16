@@ -40,6 +40,7 @@ func NewPostController(a *app.App, pr repositories.PostRepository) *PostControll
 }
 
 func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
+	httpScheme := "https://"
 	total, _ := pc.PostRepository.GetTotalPostCount()
 	page := r.URL.Query().Get("page")
 	log.Println("page: ", page)
@@ -56,6 +57,9 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 	offset := (pageInt - 1) * perPageInt
 	log.Println("offset: ", offset)
 	to := pageInt * perPageInt
+	if to > total {
+		to = total
+	}
 	from := offset + 1
 	totalPages := (total-1)/perPageInt + 1
 	//totalCount := int(float64(total) / float64(perPageInt))
@@ -66,16 +70,16 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 	// (currentPage-1 // Should be greater or equal to 0) * limit
 	prevPage := pageInt - 1
 	log.Println("prevPage: ", prevPage)
-	firstPageUrl := fmt.Sprintf(r.URL.Scheme+r.Host+r.URL.Path+"?page=%d", 1)
-	lastPageString := fmt.Sprintf(r.URL.Scheme+r.Host+r.URL.Path+"?page=%d", totalPages)
+	firstPageUrl := fmt.Sprintf(httpScheme+r.Host+r.URL.Path+"?page=%d", 1)
+	lastPageString := fmt.Sprintf(httpScheme+r.Host+r.URL.Path+"?page=%d", totalPages)
 	var prevPageUrl string
 	var nextPageUrl string
 	if prevPage > 0 && prevPage < totalPages {
-		prevPageUrl = fmt.Sprintf(r.URL.Scheme+r.Host+r.URL.Path+"?page=%d", prevPage)
+		prevPageUrl = fmt.Sprintf(httpScheme+r.Host+r.URL.Path+"?page=%d", prevPage)
 	}
 	nextPage := pageInt + 1
 	if nextPage <= totalPages {
-		nextPageUrl = fmt.Sprintf(r.URL.Scheme+r.Host+r.URL.Path+"?page=%d", nextPage)
+		nextPageUrl = fmt.Sprintf(httpScheme+r.Host+r.URL.Path+"?page=%d", nextPage)
 	}
 	//prevPageString := fmt.Sprintf(r.URL.Path+"?page=%d", prevPage)
 	posts, err := pc.PostRepository.Paginate(perPageInt, offset)

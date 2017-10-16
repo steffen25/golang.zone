@@ -18,6 +18,8 @@ type PostRepository interface {
 	Exists(slug string) bool
 	Delete(id int) error
 	Update(p *models.Post) error
+	Paginate(perpage int, offset int) ([]*models.Post, error)
+	GetTotalPostCount() (int, error)
 }
 
 type postRepository struct {
@@ -56,6 +58,42 @@ func (pr *postRepository) GetAll() ([]*models.Post, error) {
 	var posts []*models.Post
 
 	rows, err := pr.DB.Query("SELECT id, title, slug, body, created_at, updated_at, user_id from posts")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		p := new(models.Post)
+		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (pr *postRepository) GetTotalPostCount() (int, error) {
+	var count int
+	err := pr.DB.QueryRow("SELECT COUNT(*) FROM posts").Scan(&count)
+	if err != nil {
+		return -1, err
+	}
+
+	return count, nil
+}
+
+func (pr *postRepository) Paginate(perpage int, offset int) ([]*models.Post, error) {
+	var posts []*models.Post
+
+	rows, err := pr.DB.Query("SELECT id, title, slug, body, created_at, updated_at, user_id FROM posts LIMIT ? OFFSET ?", perpage, offset)
 	if err != nil {
 		return nil, err
 	}

@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"io"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 )
@@ -19,21 +19,20 @@ import (
 }*/
 
 type APIResponse struct {
-	Success bool		`json:"success,omitempty"`
-	Message string		`json:"message,omitempty"`
-	Data    interface{}	`json:"data,omitempty"`
+	Success bool        `json:"success"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 type APIError struct {
-	Success bool		`json:"success"`
-	Message string		`json:"message"`
-	Status int			`json:"status"`
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Status  int    `json:"status"`
 }
 
 type JsonData struct {
 	data map[string]interface{}
 }
-
 
 //var NotImplemented = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 //	w.Write([]byte("Not Implemented"))
@@ -56,7 +55,7 @@ func GetJSON(reader io.Reader) (*JsonData, error) {
 
 func (d *JsonData) GetString(key string) (string, error) {
 	keys := d.data
-	err := errors.New("Could not find key: "+key)
+	err := errors.New("Could not find key: " + key)
 	if v, ok := keys[key]; ok {
 		return v.(string), nil
 	}
@@ -66,7 +65,7 @@ func (d *JsonData) GetString(key string) (string, error) {
 
 func (d *JsonData) GetInt(key string) (int, error) {
 	keys := d.data
-	err := errors.New("Could not find key: "+key)
+	err := errors.New("Could not find key: " + key)
 	if v, ok := keys[key]; ok {
 		return v.(int), nil
 	}

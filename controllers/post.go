@@ -66,16 +66,16 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 	// (currentPage-1 // Should be greater or equal to 0) * limit
 	prevPage := pageInt - 1
 	log.Println("prevPage: ", prevPage)
-	firstPageUrl := fmt.Sprintf(r.URL.Path+"?page=%d", 1)
-	lastPageString := fmt.Sprintf(r.URL.Path+"?page=%d", totalPages)
+	firstPageUrl := fmt.Sprintf(r.URL.Scheme+r.Host+r.URL.Path+"?page=%d", 1)
+	lastPageString := fmt.Sprintf(r.URL.Scheme+r.Host+r.URL.Path+"?page=%d", totalPages)
 	var prevPageUrl string
 	var nextPageUrl string
 	if prevPage > 0 && prevPage < totalPages {
-		prevPageUrl = fmt.Sprintf(r.URL.Path+"?page=%d", prevPage)
+		prevPageUrl = fmt.Sprintf(r.URL.Scheme+r.Host+r.URL.Path+"?page=%d", prevPage)
 	}
 	nextPage := pageInt + 1
 	if nextPage <= totalPages {
-		nextPageUrl = fmt.Sprintf(r.URL.Path+"?page=%d", nextPage)
+		nextPageUrl = fmt.Sprintf(r.URL.Scheme+r.Host+r.URL.Path+"?page=%d", nextPage)
 	}
 	//prevPageString := fmt.Sprintf(r.URL.Path+"?page=%d", prevPage)
 	posts, err := pc.PostRepository.Paginate(perPageInt, offset)

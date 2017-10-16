@@ -2,16 +2,16 @@ package controllers
 
 import (
 	"net/http"
-	"time"
 	"strings"
+	"time"
 
-	"github.com/steffen25/golang.zone/models"
-	"github.com/steffen25/golang.zone/services"
-	"github.com/steffen25/golang.zone/repositories"
-	"github.com/steffen25/golang.zone/app"
-	"github.com/gorilla/mux"
-	"strconv"
 	"github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
+	"github.com/steffen25/golang.zone/app"
+	"github.com/steffen25/golang.zone/models"
+	"github.com/steffen25/golang.zone/repositories"
+	"github.com/steffen25/golang.zone/services"
+	"strconv"
 )
 
 type PostController struct {
@@ -31,6 +31,34 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	NewAPIResponse(&APIResponse{Success: true, Data: posts}, w, http.StatusOK)
+}
+
+func (pc *PostController) GetById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
+		return
+	}
+	post, err := pc.PostRepository.FindById(id)
+	if err != nil {
+		NewAPIError(&APIError{false, "Could not find post", http.StatusNotFound}, w)
+		return
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Data: post}, w, http.StatusOK)
+}
+
+func (pc *PostController) GetBySlug(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slug := vars["slug"]
+	post, err := pc.PostRepository.FindBySlug(slug)
+	if err != nil {
+		NewAPIError(&APIError{false, "Could not find post", http.StatusNotFound}, w)
+		return
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Data: post}, w, http.StatusOK)
 }
 
 func (pc *PostController) Create(w http.ResponseWriter, r *http.Request) {
@@ -59,11 +87,11 @@ func (pc *PostController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	post := &models.Post{
-		Title: title,
-		Slug: generateSlug(title),
-		Body: body,
+		Title:     title,
+		Slug:      generateSlug(title),
+		Body:      body,
 		CreatedAt: time.Now(),
-		UserID: uid,
+		UserID:    uid,
 	}
 
 	err = pc.PostRepository.Create(post)

@@ -35,6 +35,8 @@ func NewRouter(a *app.App) *mux.Router {
 
 	// Posts
 	api.HandleFunc("/posts", middlewares.Logger(pc.GetAll)).Methods(http.MethodGet)
+	api.HandleFunc("/posts/{id:[0-9]+}", middlewares.Logger(pc.GetById)).Methods(http.MethodGet)
+	api.HandleFunc("/posts/{slug}", middlewares.Logger(pc.GetBySlug)).Methods(http.MethodGet)
 	api.HandleFunc("/posts", middlewares.Logger(middlewares.RequireAuthentication(a, pc.Create, true))).Methods(http.MethodPost)
 	api.HandleFunc("/posts/{id}", middlewares.Logger(middlewares.RequireAuthentication(a, pc.Update, true))).Methods(http.MethodPut)
 

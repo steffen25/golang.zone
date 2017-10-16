@@ -1,18 +1,19 @@
 package repositories
 
 import (
-	"strconv"
 	"log"
+	"strconv"
 
-	"github.com/steffen25/golang.zone/models"
-	"github.com/steffen25/golang.zone/database"
 	"database/sql"
+	"github.com/steffen25/golang.zone/database"
+	"github.com/steffen25/golang.zone/models"
 )
 
 type PostRepository interface {
-	Create (p *models.Post) error
+	Create(p *models.Post) error
 	GetAll() ([]*models.Post, error)
 	FindById(id int) (*models.Post, error)
+	FindBySlug(slug string) (*models.Post, error)
 	FindByUser(u *models.User) ([]*models.Post, error)
 	Exists(slug string) bool
 	Delete(id int) error
@@ -88,6 +89,16 @@ func (pr *postRepository) FindById(id int) (*models.Post, error) {
 	return &post, nil
 }
 
+func (pr *postRepository) FindBySlug(slug string) (*models.Post, error) {
+	post := models.Post{}
+	err := pr.DB.QueryRow("SELECT id, title, slug, body, created_at, updated_at, user_id FROM posts WHERE slug LIKE ?", "%"+slug+"%").Scan(&post.ID, &post.Title, &post.Slug, &post.Body, &post.CreatedAt, &post.UpdatedAt, &post.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}
+
 func (pr *postRepository) FindByUser(u *models.User) ([]*models.Post, error) {
 	var posts []*models.Post
 
@@ -152,7 +163,7 @@ func (pr *postRepository) Update(p *models.Post) error {
 		return err
 	}
 	counter := strconv.Itoa(slugCount)
-	p.Slug = p.Slug+"-"+counter
+	p.Slug = p.Slug + "-" + counter
 
 	err = pr.updatePost(p)
 	if err != nil {

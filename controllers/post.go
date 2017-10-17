@@ -92,11 +92,11 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 		to,
 		firstPageUrl,
 		lastPageString,
-		&nextPageUrl,
-		&prevPageUrl,
+		nextPageUrl,
+		prevPageUrl,
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Data: posts, Pagination: postPaginator}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Data: posts, Pagination: &postPaginator}, w, http.StatusOK)
 }
 
 func (pc *PostController) GetById(w http.ResponseWriter, r *http.Request) {

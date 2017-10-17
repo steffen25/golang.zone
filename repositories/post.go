@@ -93,7 +93,7 @@ func (pr *postRepository) GetTotalPostCount() (int, error) {
 func (pr *postRepository) Paginate(perpage int, offset int) ([]*models.Post, error) {
 	var posts []*models.Post
 
-	rows, err := pr.DB.Query("SELECT id, title, slug, body, created_at, updated_at, user_id FROM posts LIMIT ? OFFSET ?", perpage, offset)
+	rows, err := pr.DB.Query("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=u.`id` LIMIT ? OFFSET ?", perpage, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (pr *postRepository) Paginate(perpage int, offset int) ([]*models.Post, err
 
 	for rows.Next() {
 		p := new(models.Post)
-		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID)
+		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID, &p.Author)
 		if err != nil {
 			log.Println(err)
 			return nil, err
@@ -140,7 +140,7 @@ func (pr *postRepository) FindBySlug(slug string) (*models.Post, error) {
 func (pr *postRepository) FindByUser(u *models.User) ([]*models.Post, error) {
 	var posts []*models.Post
 
-	rows, err := pr.DB.Query("SELECT id, title, slug, body, created_at, updated_at, user_id FROM posts WHERE user_id=?", u.ID)
+	rows, err := pr.DB.Query("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=?", u.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func (pr *postRepository) FindByUser(u *models.User) ([]*models.Post, error) {
 
 	for rows.Next() {
 		p := new(models.Post)
-		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID)
+		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID, &p.Author)
 		if err != nil {
 			return nil, err
 		}

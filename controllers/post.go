@@ -12,7 +12,6 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
-	"log"
 	"strconv"
 )
 
@@ -22,17 +21,16 @@ type PostController struct {
 }
 
 type PostPaginator struct {
-	Total        int         `json:"total"`
-	PerPage      int         `json:"perPage"`
-	CurrentPage  int         `json:"currentPage"`
-	LastPage     int         `json:"lastPage"`
-	From         int         `json:"from"`
-	To           int         `json:"to"`
-	FirstPageUrl string      `json:"firstPageUrl"`
-	LastPageUrl  string      `json:"lastPageUrl"`
-	NextPageUrl  *string     `json:"nextPageUrl"`
-	PrevPageUrl  *string     `json:"prevPageUrl"`
-	Data         interface{} `json:"data"`
+	Total        int     `json:"total"`
+	PerPage      int     `json:"perPage"`
+	CurrentPage  int     `json:"currentPage"`
+	LastPage     int     `json:"lastPage"`
+	From         int     `json:"from"`
+	To           int     `json:"to"`
+	FirstPageUrl string  `json:"firstPageUrl"`
+	LastPageUrl  string  `json:"lastPageUrl"`
+	NextPageUrl  *string `json:"nextPageUrl"`
+	PrevPageUrl  *string `json:"prevPageUrl"`
 }
 
 func NewPostController(a *app.App, pr repositories.PostRepository) *PostController {
@@ -43,33 +41,24 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 	httpScheme := "https://"
 	total, _ := pc.PostRepository.GetTotalPostCount()
 	page := r.URL.Query().Get("page")
-	log.Println("page: ", page)
 	pageInt, err := strconv.Atoi(page)
 	if err != nil {
 		pageInt = 1
 	}
 	perPage := r.URL.Query().Get("perpage")
-	log.Println("perpage: ", perPage)
 	perPageInt, err := strconv.Atoi(perPage)
 	if err != nil || perPageInt < 1 || perPageInt > 100 {
 		perPageInt = 10
 	}
 	offset := (pageInt - 1) * perPageInt
-	log.Println("offset: ", offset)
 	to := pageInt * perPageInt
 	if to > total {
 		to = total
 	}
+
 	from := offset + 1
 	totalPages := (total-1)/perPageInt + 1
-	//totalCount := int(float64(total) / float64(perPageInt))
-	// $prevPage = ($page + $totalPages - 2) % $totalPages + 1;
-	//nextPage := pageInt%totalPages + 1
-	//prevPage := (pageInt+totalPages-2)%totalPages + 1
-	// $previous_offset = (($currentPage - 1) - 1) * $items_per_page;
-	// (currentPage-1 // Should be greater or equal to 0) * limit
 	prevPage := pageInt - 1
-	log.Println("prevPage: ", prevPage)
 	firstPageUrl := fmt.Sprintf(httpScheme+r.Host+r.URL.Path+"?page=%d", 1)
 	lastPageString := fmt.Sprintf(httpScheme+r.Host+r.URL.Path+"?page=%d", totalPages)
 	var prevPageUrl string
@@ -77,11 +66,12 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 	if prevPage > 0 && prevPage < totalPages {
 		prevPageUrl = fmt.Sprintf(httpScheme+r.Host+r.URL.Path+"?page=%d", prevPage)
 	}
+
 	nextPage := pageInt + 1
 	if nextPage <= totalPages {
 		nextPageUrl = fmt.Sprintf(httpScheme+r.Host+r.URL.Path+"?page=%d", nextPage)
 	}
-	//prevPageString := fmt.Sprintf(r.URL.Path+"?page=%d", prevPage)
+
 	posts, err := pc.PostRepository.Paginate(perPageInt, offset)
 	if err != nil {
 		NewAPIError(&APIError{false, "Could not fetch posts", http.StatusBadRequest}, w)
@@ -93,7 +83,7 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postPaginator := PostPaginator{
+	postPaginator := APIPagination{
 		total,
 		perPageInt,
 		pageInt,
@@ -104,10 +94,9 @@ func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
 		lastPageString,
 		&nextPageUrl,
 		&prevPageUrl,
-		posts,
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Data: postPaginator}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Data: posts, Pagination: postPaginator}, w, http.StatusOK)
 }
 
 func (pc *PostController) GetById(w http.ResponseWriter, r *http.Request) {

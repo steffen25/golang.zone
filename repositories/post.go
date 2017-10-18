@@ -18,6 +18,8 @@ type PostRepository interface {
 	Exists(slug string) bool
 	Delete(id int) error
 	Update(p *models.Post) error
+	Paginate(perpage int, offset int) ([]*models.Post, error)
+	GetTotalPostCount() (int, error)
 }
 
 type postRepository struct {
@@ -78,6 +80,42 @@ func (pr *postRepository) GetAll() ([]*models.Post, error) {
 	return posts, nil
 }
 
+func (pr *postRepository) GetTotalPostCount() (int, error) {
+	var count int
+	err := pr.DB.QueryRow("SELECT COUNT(*) FROM posts").Scan(&count)
+	if err != nil {
+		return -1, err
+	}
+
+	return count, nil
+}
+
+func (pr *postRepository) Paginate(perpage int, offset int) ([]*models.Post, error) {
+	var posts []*models.Post
+
+	rows, err := pr.DB.Query("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=u.`id` LIMIT ? OFFSET ?", perpage, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		p := new(models.Post)
+		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID, &p.Author)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
 func (pr *postRepository) FindById(id int) (*models.Post, error) {
 	post := models.Post{}
 
@@ -102,7 +140,7 @@ func (pr *postRepository) FindBySlug(slug string) (*models.Post, error) {
 func (pr *postRepository) FindByUser(u *models.User) ([]*models.Post, error) {
 	var posts []*models.Post
 
-	rows, err := pr.DB.Query("SELECT id, title, slug, body, created_at, updated_at, user_id FROM posts WHERE user_id=?", u.ID)
+	rows, err := pr.DB.Query("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=?", u.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +148,7 @@ func (pr *postRepository) FindByUser(u *models.User) ([]*models.Post, error) {
 
 	for rows.Next() {
 		p := new(models.Post)
-		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID)
+		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID, &p.Author)
 		if err != nil {
 			return nil, err
 		}

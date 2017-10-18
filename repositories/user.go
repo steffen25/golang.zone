@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/database"
+	"github.com/steffen25/golang.zone/models"
 )
 
 type UserRepository interface {

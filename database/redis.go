@@ -14,9 +14,9 @@ type RedisDB struct {
 func NewRedisDB(dbCfg config.RedisConfig) (*RedisDB, error) {
 	port := strconv.Itoa(dbCfg.Post)
 	client := redis.NewClient(&redis.Options{
-		Addr:     dbCfg.Host+":"+port,
+		Addr:     dbCfg.Host + ":" + port,
 		Password: "", // no password set
-		DB:       0, // use default DB
+		DB:       0,  // use default DB
 	})
 
 	_, err := client.Ping().Result()

@@ -1,20 +1,20 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"fmt"
 
-	"github.com/gorilla/mux"
 	"github.com/gorilla/handlers"
-	"github.com/steffen25/golang.zone/database"
+	"github.com/gorilla/mux"
 	"github.com/steffen25/golang.zone/config"
+	"github.com/steffen25/golang.zone/database"
 )
 
 type App struct {
-	Config 		config.Config
-	Database 	*database.MySQLDB
-	Redis 	*database.RedisDB
+	Config   config.Config
+	Database *database.MySQLDB
+	Redis    *database.RedisDB
 }
 
 func New(cfg config.Config) *App {
@@ -30,7 +30,7 @@ func New(cfg config.Config) *App {
 	return &App{cfg, db, redis}
 }
 
-func (a *App) Run(r *mux.Router)  {
+func (a *App) Run(r *mux.Router) {
 	headersOk := handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "X-Requested-With"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})

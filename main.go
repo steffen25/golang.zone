@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	
+
 	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/routes"

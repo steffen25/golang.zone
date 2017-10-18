@@ -12,6 +12,7 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
+	"github.com/steffen25/golang.zone/util"
 	"strconv"
 )
 
@@ -154,7 +155,7 @@ func (pc *PostController) Create(w http.ResponseWriter, r *http.Request) {
 
 	post := &models.Post{
 		Title:     title,
-		Slug:      generateSlug(title),
+		Slug:      util.GenerateSlug(title),
 		Body:      body,
 		CreatedAt: time.Now(),
 		UserID:    uid,
@@ -219,7 +220,7 @@ func (pc *PostController) Update(w http.ResponseWriter, r *http.Request) {
 	post.UpdatedAt = mysql.NullTime{Time: time.Now(), Valid: true}
 	post.Title = title
 	post.Body = body
-	post.Slug = generateSlug(title)
+	post.Slug = util.GenerateSlug(title)
 	err = pc.PostRepository.Update(post)
 	if err != nil {
 		NewAPIError(&APIError{false, "Could not update post", http.StatusBadRequest}, w)

@@ -12,6 +12,7 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
+	"github.com/steffen25/golang.zone/util"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -73,7 +74,7 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 		NewAPIError(&APIError{false, "Email is required", http.StatusBadRequest}, w)
 		return
 	}
-	if ok := IsEmail(email); !ok {
+	if ok := util.IsEmail(email); !ok {
 		NewAPIError(&APIError{false, "You must provide a valid email address", http.StatusBadRequest}, w)
 		return
 	}

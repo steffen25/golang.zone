@@ -1,9 +1,9 @@
 package middlewares
 
 import (
+	"log"
 	"net/http"
 	"time"
-	"log"
 )
 
 // Logger logs the current request to the console printing the date, HTTP method, path and elapsed time

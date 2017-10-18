@@ -36,7 +36,7 @@ Generate public key
 
 
 ### Prerequisites
-- Go 1.7
+- Go 1.7+
 - Mysql
 - Redis (To revoke JWTs)
 

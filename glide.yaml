@@ -16,3 +16,4 @@ import:
   version: v2.1.0
   subpackages:
   - cmd/goose
+- package: github.com/rainycape/unidecode

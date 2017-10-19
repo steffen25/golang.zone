@@ -84,7 +84,37 @@ Misc:
 
 ### Example requests
 
-todo
+#### Paw
+<i>Mac users only</i>
+
+[golang.zone.paw](golang.zone.paw)
+
+Open the file with Paw then set the environment in the upper left corner
+
+#### Postman
+1. Import the [golang.zone.postman_collection.json](golang.zone.postman_collection.json) in Postman
+2. Setup your environments by clicking the 🔩 icon just next to the 👁️ icon top in the top right corner
+3. You can also import the environments created by me, 
+
+[golang.zone.Local.postman_environment.json](Postman local env)
+
+[golang.zone.Prod.postman_environment.json](Postman prod env)
+
+Now go to step 8 and continue
+4. I suggest creating 2 envs on called golang.zone Local and one called golang.zone Prod
+5. Create 3 keys BASE_URL, ACCESS_TOKEN and REFRESH_TOKEN
+6. Set the value of BASE_URL to http://localhost:8080 for the local env and https://golang.zone for the Prod env, leave the tokens value empty for now
+7. Click Add/Update.
+8. Go to the Login request and open up the Tests tab.
+9. Insert the code below then save and finally click send.
+```javascript
+var jsonData = JSON.parse(responseBody);
+postman.setEnvironmentVariable("ACCESS_TOKEN", jsonData.data.accessToken);
+postman.setEnvironmentVariable("REFRESH_TOKEN", jsonData.data.refreshToken);
+```
+10. Now when you call endpoints that require authorization it will automatically insert the token value inside the Authorization header
+
+
 
 
 ### Docker Development

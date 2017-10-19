@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/rainycape/unidecode"
 	"regexp"
 	"strings"
 )
@@ -15,6 +16,11 @@ func IsEmail(email string) bool {
 }
 
 func GenerateSlug(title string) string {
+	slug := unidecode.Unidecode(title)
+	slug = strings.ToLower(slug)
 	re := regexp.MustCompile("[^a-z0-9]+")
-	return strings.Trim(re.ReplaceAllString(strings.ToLower(title), "-"), "-")
+	slug = re.ReplaceAllString(slug, "-")
+	slug = strings.Trim(slug, "-")
+
+	return slug
 }

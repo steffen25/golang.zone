@@ -140,7 +140,7 @@ func (pr *postRepository) FindBySlug(slug string) (*models.Post, error) {
 func (pr *postRepository) FindByUser(u *models.User) ([]*models.Post, error) {
 	var posts []*models.Post
 
-	rows, err := pr.DB.Query("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=?", u.ID)
+	rows, err := pr.DB.Query("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=? WHERE u.`id`=?", u.ID, u.ID)
 	if err != nil {
 		return nil, err
 	}

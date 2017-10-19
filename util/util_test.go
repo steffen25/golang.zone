@@ -36,6 +36,10 @@ func TestGenerateSlug(t *testing.T) {
 		{"some awesome title", "some-awesome-title"},
 		{"aNOTHER aWESOME tITLE", "another-awesome-title"},
 		{"oh oh _239", "oh-oh-239"},
+		{"new café is opening", "new-cafe-is-opening"},
+		{"æ", "ae"},
+		{"źŹżŹ", "zzzz"},
+		{"Hey ThomasBS😎", "hey-thomasbs"},
 	}
 
 	for _, c := range cases {

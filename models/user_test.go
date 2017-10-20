@@ -47,7 +47,6 @@ func TestMarshalJSON(t *testing.T) {
 	expectedJson := "{\"id\":0,\"name\":\"Thomas\",\"email\":\"thomas@email.com\",\"createdAt\":\"2009-11-10T23:00:00Z\"}"
 
 	equals(t, string(json), expectedJson)
-
 }
 
 func createUser() *models.User {

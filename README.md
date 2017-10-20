@@ -92,15 +92,15 @@ Misc:
 #### Paw
 <i>Mac users only</i>
 
-[golang.zone.paw](golang.zone.paw)
+[golang.zone.paw](examples/golang.zone.paw)
 
 Open the file with Paw then set the environment in the upper left corner
 
 #### Postman
-1. Import the [golang.zone.postman_collection.json](golang.zone.postman_collection.json) in Postman
+1. Import the [golang.zone.postman_collection.json](examples/golang.zone.postman_collection.json) in Postman
 2. Setup your environments by clicking the 🔩 icon just next to the 👁️ icon top in the top right corner
 3. You can also import the environments created by me, 
-[golang.zone.Local.postman_environment.json](golang.zone.Local.postman_environment.json), [golang.zone.Prod.postman_environment.json](golang.zone.Prod.postman_environment.json)
+[golang.zone.Local.postman_environment.json](examples/golang.zone.Local.postman_environment.json), [golang.zone.Prod.postman_environment.json](examples/golang.zone.Prod.postman_environment.json)
 continue at step 8.
 4. I suggest creating 2 envs on called golang.zone Local and one called golang.zone Prod
 5. Create 3 keys BASE_URL, ACCESS_TOKEN and REFRESH_TOKEN

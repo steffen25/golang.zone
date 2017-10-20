@@ -44,15 +44,14 @@ func (ur *userRepository) Create(u *models.User) error {
 }
 
 func (ur *userRepository) Update(u *models.User) error {
-
 	// Check if an user already exists with the email
 	// Prepare statement for inserting data
-	stmt, err := ur.DB.Prepare("UPDATE users SET name=?, email=?, password=? WHERE id = ?")
+	stmt, err := ur.DB.Prepare("UPDATE users SET name=?, email=?, password=?, updated_at=? WHERE id = ?")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(u.Name, u.Email, u.Password, u.ID)
+	_, err = stmt.Exec(u.Name, u.Email, u.Password, u.UpdatedAt, u.ID)
 	if err != nil {
 		return err
 	}
@@ -63,7 +62,7 @@ func (ur *userRepository) Update(u *models.User) error {
 func (ur *userRepository) GetAll() ([]*models.User, error) {
 	var users []*models.User
 
-	rows, err := ur.DB.Query("SELECT id, name, email, created_at, admin from users")
+	rows, err := ur.DB.Query("SELECT id, name, email, admin, created_at, updated_at FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +70,7 @@ func (ur *userRepository) GetAll() ([]*models.User, error) {
 
 	for rows.Next() {
 		u := new(models.User)
-		err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.CreatedAt, &u.Admin)
+		err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.Admin, &u.CreatedAt, &u.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -88,7 +87,7 @@ func (ur *userRepository) GetAll() ([]*models.User, error) {
 func (ur *userRepository) FindByEmail(email string) (*models.User, error) {
 	user := models.User{}
 
-	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at, admin FROM users WHERE email = ?", email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.Admin)
+	err := ur.DB.QueryRow("SELECT id, name, email, password, admin, created_at, updated_at FROM users WHERE email = ?", email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Admin, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +98,7 @@ func (ur *userRepository) FindByEmail(email string) (*models.User, error) {
 func (ur *userRepository) FindById(id int) (*models.User, error) {
 	user := models.User{}
 
-	err := ur.DB.QueryRow("SELECT id, name, email, password, created_at, admin FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.Admin)
+	err := ur.DB.QueryRow("SELECT id, name, email, password, admin, created_at, updated_at FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Admin, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}

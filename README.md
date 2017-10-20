@@ -1,4 +1,7 @@
 # golang.zone
+
+[![Build Status](https://travis-ci.org/steffen25/golang.zone.svg?branch=master)](https://travis-ci.org/steffen25/golang.zone)
+
 Home of golang.zone
 
 This repository holds the files for the REST API of https://golang.zone

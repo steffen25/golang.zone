@@ -38,12 +38,11 @@ func TestMarshalJSON(t *testing.T) {
 		CreatedAt: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 	}
 
-	json, error := u.MarshalJSON()
-	if error != nil {
+	json, e := u.MarshalJSON()
+	if e != nil {
 		t.Fail()
 	}
 
-	// Output: Go launched at 2009-11-10 15:00:00 -0800 PST
 	expectedJson := "{\"id\":0,\"name\":\"Thomas\",\"email\":\"thomas@email.com\",\"createdAt\":\"2009-11-10T23:00:00Z\"}"
 
 	equals(t, string(json), expectedJson)

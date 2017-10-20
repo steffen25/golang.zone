@@ -1,6 +1,8 @@
 # golang.zone
 
-[![Build Status](https://travis-ci.org/steffen25/golang.zone.svg?branch=master)](https://travis-ci.org/steffen25/golang.zone)
+[![Build Status](https://travis-ci.org/steffen25/golang.zone.svg?branch=master)](https://travis-ci.org/steffen25/golang.zone) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/steffen25/golang.zone)](https://goreportcard.com/report/github.com/steffen25/golang.zone)
+[![Coverage Status](https://coveralls.io/repos/github/steffen25/golang.zone/badge.svg?branch=master)](https://coveralls.io/github/steffen25/golang.zone?branch=master)
 
 Home of golang.zone
 

@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"testing"
 	"time"
+	"github.com/go-sql-driver/mysql"
 )
 
 func TestUserIsAdmin(t *testing.T) {
@@ -35,6 +36,7 @@ func TestMarshalJSON(t *testing.T) {
 		Email:     "thomas@email.com",
 		Admin:     false,
 		CreatedAt: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+		UpdatedAt: mysql.NullTime{Time: time.Date(2009, time.November, 10, 23, 1, 0, 0, time.UTC), Valid: true},
 	}
 
 	json, e := u.MarshalJSON()
@@ -42,7 +44,7 @@ func TestMarshalJSON(t *testing.T) {
 		t.Fail()
 	}
 
-	expectedJson := "{\"id\":0,\"name\":\"Thomas\",\"email\":\"thomas@email.com\",\"createdAt\":\"2009-11-10T23:00:00Z\"}"
+	expectedJson := "{\"id\":0,\"name\":\"Thomas\",\"email\":\"thomas@email.com\",\"createdAt\":\"2009-11-10T23:00:00Z\",\"updatedAt\":\"2009-11-10T23:01:00Z\"}"
 
 	equals(t, string(json), expectedJson)
 }

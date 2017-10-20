@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"github.com/steffen25/golang.zone/models"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -31,7 +30,7 @@ func TestWrongPassword(t *testing.T) {
 }
 
 func TestMarshalJSON(t *testing.T) {
-	u := &models.User{
+	u := &User{
 		Name:      "Thomas",
 		Email:     "thomas@email.com",
 		Admin:     false,
@@ -48,8 +47,8 @@ func TestMarshalJSON(t *testing.T) {
 	equals(t, string(json), expectedJson)
 }
 
-func createUser() *models.User {
-	u := &models.User{
+func createUser() *User {
+	u := &User{
 		Name:      "Thomas",
 		Email:     "thomas@email.com",
 		Admin:     false,

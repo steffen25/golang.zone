@@ -49,6 +49,25 @@ func TestMarshalJSON(t *testing.T) {
 	equals(t, string(json), expectedJson)
 }
 
+func TestMarshalJSONEmptyUpdatedAt(t *testing.T) {
+	u := &User{
+		Name:      "Thomas",
+		Email:     "thomas@email.com",
+		Admin:     false,
+		CreatedAt: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+		UpdatedAt: mysql.NullTime{Time: time.Time{}, Valid: false},
+	}
+
+	json, e := u.MarshalJSON()
+	if e != nil {
+		t.Fail()
+	}
+
+	expectedJson := "{\"id\":0,\"name\":\"Thomas\",\"email\":\"thomas@email.com\",\"createdAt\":\"2009-11-10T23:00:00Z\",\"updatedAt\":null}"
+
+	equals(t, string(json), expectedJson)
+}
+
 func createUser() *User {
 	u := &User{
 		Name:      "Thomas",

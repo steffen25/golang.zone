@@ -13,6 +13,7 @@ import (
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/util"
+	"github.com/go-sql-driver/mysql"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -182,6 +183,8 @@ func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
 		}
 		user.SetPassword(newpw)
 	}
+
+	user.UpdatedAt = mysql.NullTime{Time: time.Now(), Valid: true}
 
 	err = uc.UserRepository.Update(user)
 	if err != nil {

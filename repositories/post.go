@@ -67,7 +67,6 @@ func (pr *postRepository) GetAll() ([]*models.Post, error) {
 		p := new(models.Post)
 		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 		posts = append(posts, p)
@@ -103,7 +102,6 @@ func (pr *postRepository) Paginate(perpage int, offset int) ([]*models.Post, err
 		p := new(models.Post)
 		err := rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Body, &p.CreatedAt, &p.UpdatedAt, &p.UserID, &p.Author)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 		posts = append(posts, p)
@@ -119,7 +117,7 @@ func (pr *postRepository) Paginate(perpage int, offset int) ([]*models.Post, err
 func (pr *postRepository) FindById(id int) (*models.Post, error) {
 	post := models.Post{}
 
-	err := pr.DB.QueryRow("SELECT id, title, slug, body, created_at, updated_at, user_id FROM posts WHERE id = ?", id).Scan(&post.ID, &post.Title, &post.Slug, &post.Body, &post.CreatedAt, &post.UpdatedAt, &post.UserID)
+	err := pr.DB.QueryRow("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=u.`id` WHERE p.`id`=?", id).Scan(&post.ID, &post.Title, &post.Slug, &post.Body, &post.CreatedAt, &post.UpdatedAt, &post.UserID, &post.Author)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +127,7 @@ func (pr *postRepository) FindById(id int) (*models.Post, error) {
 
 func (pr *postRepository) FindBySlug(slug string) (*models.Post, error) {
 	post := models.Post{}
-	err := pr.DB.QueryRow("SELECT id, title, slug, body, created_at, updated_at, user_id FROM posts WHERE slug LIKE ?", "%"+slug+"%").Scan(&post.ID, &post.Title, &post.Slug, &post.Body, &post.CreatedAt, &post.UpdatedAt, &post.UserID)
+	err := pr.DB.QueryRow("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=u.`id` WHERE slug LIKE ?", "%"+slug+"%").Scan(&post.ID, &post.Title, &post.Slug, &post.Body, &post.CreatedAt, &post.UpdatedAt, &post.UserID, &post.Author)
 	if err != nil {
 		return nil, err
 	}

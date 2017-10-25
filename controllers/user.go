@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/util"
-	"github.com/go-sql-driver/mysql"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -192,7 +192,12 @@ func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Data: user}, w, http.StatusOK)
+	authUser := &models.AuthUser{
+		User:  user,
+		Admin: user.Admin,
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Data: authUser}, w, http.StatusOK)
 }
 
 func (uc *UserController) FindPostsByUser(w http.ResponseWriter, r *http.Request) {

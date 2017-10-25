@@ -2,9 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 // User represents a user account
@@ -19,6 +20,11 @@ type User struct {
 	UpdatedAt mysql.NullTime `json:"updatedAt"`
 }
 
+type AuthUser struct {
+	*User
+	Admin bool `json:"admin"`
+}
+
 // TODO: Maybe find a better solution to remove the password when marshalling to json
 func (u *User) MarshalJSON() ([]byte, error) {
 	if !u.UpdatedAt.Valid {
@@ -26,17 +32,38 @@ func (u *User) MarshalJSON() ([]byte, error) {
 			ID        int             `json:"id"`
 			Name      string          `json:"name"`
 			Email     string          `json:"email"`
-			CreatedAt time.Time          `json:"createdAt"`
+			CreatedAt time.Time       `json:"createdAt"`
 			UpdatedAt *mysql.NullTime `json:"updatedAt"`
 		}{u.ID, u.Name, u.Email, u.CreatedAt, nil})
 	}
 	return json.Marshal(struct {
-		ID        int    `json:"id"`
-		Name      string `json:"name"`
-		Email     string `json:"email"`
+		ID        int       `json:"id"`
+		Name      string    `json:"name"`
+		Email     string    `json:"email"`
 		CreatedAt time.Time `json:"createdAt"`
 		UpdatedAt time.Time `json:"updatedAt"`
 	}{u.ID, u.Name, u.Email, u.CreatedAt, u.UpdatedAt.Time})
+}
+
+func (u *AuthUser) MarshalJSON() ([]byte, error) {
+	if !u.UpdatedAt.Valid {
+		return json.Marshal(struct {
+			ID        int             `json:"id"`
+			Name      string          `json:"name"`
+			Email     string          `json:"email"`
+			Admin     bool            `json:"admin"`
+			CreatedAt time.Time       `json:"createdAt"`
+			UpdatedAt *mysql.NullTime `json:"updatedAt"`
+		}{u.ID, u.Name, u.Email, u.Admin, u.CreatedAt, nil})
+	}
+	return json.Marshal(struct {
+		ID        int       `json:"id"`
+		Name      string    `json:"name"`
+		Email     string    `json:"email"`
+		Admin     bool      `json:"admin"`
+		CreatedAt time.Time `json:"createdAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
+	}{u.ID, u.Name, u.Email, u.Admin, u.CreatedAt, u.UpdatedAt.Time})
 }
 
 func (u *User) SetPassword(password string) {

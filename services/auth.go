@@ -31,8 +31,8 @@ type TokenClaims struct {
 
 type KAuthTokenClaims struct {
 	jwt.StandardClaims
-	UID   int  `json:"id"`
-	Admin bool `json:"admin"`
+	UID       int    `json:"id"`
+	Admin     bool   `json:"admin"`
 	TokenHash string `json:"tokenHash"`
 }
 
@@ -84,7 +84,7 @@ func NewJWTAuthService(jwtCfg *config.JWTConfig, redis *database.RedisDB) JWTAut
 func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error) {
 	uid := strconv.Itoa(u.ID)
 	now := time.Now()
-	tokenHash := util.GetMD5Hash(now.String()+uid)
+	tokenHash := util.GetMD5Hash(now.String() + uid)
 	authClaims := KAuthTokenClaims{
 		jwt.StandardClaims{
 			Id:        uid + "." + uuid.NewV4().String(),
@@ -104,7 +104,7 @@ func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error
 		return nil, err
 	}
 
-	err = jwtService.Redis.Set(tokenHash + "." + authClaims.Id, u.ID, TokenDuration).Err()
+	err = jwtService.Redis.Set(tokenHash+"."+authClaims.Id, u.ID, TokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -119,7 +119,7 @@ func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error
 		return nil, err
 	}
 
-	err = jwtService.Redis.Set(tokenHash + "." + authClaims.Id, u.ID, RefreshTokenDuration).Err()
+	err = jwtService.Redis.Set(tokenHash+"."+authClaims.Id, u.ID, RefreshTokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
 		return nil, err

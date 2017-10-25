@@ -8,12 +8,13 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"os"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
 	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/controllers"
 	"github.com/steffen25/golang.zone/services"
-	"os"
 )
 
 // TODO: Create error struct that we can use instead of calling controllers?
@@ -42,7 +43,7 @@ func RequireAuthentication(a *app.App, next http.HandlerFunc, admin bool) http.H
 		if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
 			jti := claims["jti"].(string)
 			tokenHash := claims["tokenHash"].(string)
-			val, err := a.Redis.Get(tokenHash+"."+jti).Result()
+			val, err := a.Redis.Get(tokenHash + "." + jti).Result()
 			if err != nil || val == "" {
 				controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
 				return
@@ -138,7 +139,7 @@ func RequireRefreshToken(a *app.App, next http.HandlerFunc) http.HandlerFunc {
 		if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
 			jti := claims["jti"].(string)
 			tokenHash := claims["tokenHash"].(string)
-			val, err := a.Redis.Get(tokenHash+"."+jti).Result()
+			val, err := a.Redis.Get(tokenHash + "." + jti).Result()
 			if err != nil || val == "" {
 				controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
 				return

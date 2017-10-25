@@ -41,7 +41,8 @@ func RequireAuthentication(a *app.App, next http.HandlerFunc, admin bool) http.H
 
 		if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
 			jti := claims["jti"].(string)
-			val, err := a.Redis.Get(jti).Result()
+			tokenHash := claims["tokenHash"].(string)
+			val, err := a.Redis.Get(tokenHash+"."+jti).Result()
 			if err != nil || val == "" {
 				controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
 				return
@@ -136,7 +137,8 @@ func RequireRefreshToken(a *app.App, next http.HandlerFunc) http.HandlerFunc {
 
 		if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
 			jti := claims["jti"].(string)
-			val, err := a.Redis.Get(jti).Result()
+			tokenHash := claims["tokenHash"].(string)
+			val, err := a.Redis.Get(tokenHash+"."+jti).Result()
 			if err != nil || val == "" {
 				controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
 				return

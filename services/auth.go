@@ -20,12 +20,20 @@ import (
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/models"
+	"github.com/steffen25/golang.zone/util"
 )
 
 type TokenClaims struct {
 	jwt.StandardClaims
 	UID   int  `json:"id"`
 	Admin bool `json:"admin"`
+}
+
+type KAuthTokenClaims struct {
+	jwt.StandardClaims
+	UID   int  `json:"id"`
+	Admin bool `json:"admin"`
+	TokenHash string `json:"tokenHash"`
 }
 
 type AccessToken struct {
@@ -54,8 +62,7 @@ const (
 )
 
 type JWTAuthService interface {
-	GenerateAccessToken(u *models.User) (string, error)
-	GenerateRefreshToken(u *models.User) (string, error)
+	GenerateTokens(u *models.User) (*Tokens, error)
 }
 
 type jwtAuthService struct {
@@ -74,68 +81,58 @@ func NewJWTAuthService(jwtCfg *config.JWTConfig, redis *database.RedisDB) JWTAut
 	}
 }
 
-func (jwtService *jwtAuthService) GenerateAccessToken(u *models.User) (string, error) {
+func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error) {
 	uid := strconv.Itoa(u.ID)
-	authClaims := TokenClaims{
+	now := time.Now()
+	tokenHash := util.GetMD5Hash(now.String()+uid)
+	authClaims := KAuthTokenClaims{
 		jwt.StandardClaims{
 			Id:        uid + "." + uuid.NewV4().String(),
-			ExpiresAt: time.Now().Add(TokenDuration).Unix(),
-			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: now.Add(TokenDuration).Unix(),
+			IssuedAt:  now.Unix(),
 		},
 		u.ID,
 		u.Admin,
+		tokenHash,
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)
 
-	tokenString, err := token.SignedString([]byte(jwtService.secret))
+	accessTokenString, err := accessToken.SignedString([]byte(jwtService.secret))
 	if err != nil {
 		log.Fatal(err)
-		return "", err
+		return nil, err
 	}
 
-	/*uJson, err := json.Marshal(u)
+	err = jwtService.Redis.Set(tokenHash + "." + authClaims.Id, u.ID, TokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
-		return "", err
-	}*/
-	err = jwtService.Redis.Set(authClaims.Id, u.ID, TokenDuration).Err()
-	if err != nil {
-		log.Fatal(err)
-		return "", err
+		return nil, err
 	}
 
-	return tokenString, nil
-}
-
-// TODO: make something like this https://github.com/brainattica/golang-jwt-authentication-api-sample/blob/master/core/authentication/jwt_backend.go
-func (jwtService *jwtAuthService) GenerateRefreshToken(u *models.User) (string, error) {
-	uid := strconv.Itoa(u.ID)
-	authClaims := TokenClaims{
-		jwt.StandardClaims{
-			Id:        uid + "." + uuid.NewV4().String(),
-			ExpiresAt: time.Now().Add(RefreshTokenDuration).Unix(),
-			IssuedAt:  time.Now().Unix(),
-		},
-		u.ID,
-		u.Admin,
-	}
-
-	token := jwt.New(jwt.SigningMethodRS512)
-	token.Claims = authClaims
-	tokenString, err := token.SignedString(jwtService.privateKey)
+	refreshToken := jwt.New(jwt.SigningMethodRS512)
+	authClaims.Id = uid + "." + uuid.NewV4().String()
+	refreshToken.Claims = authClaims
+	refreshTokenString, err := refreshToken.SignedString(jwtService.privateKey)
 	if err != nil {
 		panic(err)
-		return "", err
+		return nil, err
 	}
 
-	err = jwtService.Redis.Set(authClaims.Id, u.ID, RefreshTokenDuration).Err()
+	err = jwtService.Redis.Set(tokenHash + "." + authClaims.Id, u.ID, RefreshTokenDuration).Err()
 	if err != nil {
 		log.Fatal(err)
-		return "", err
+		return nil, err
 	}
 
-	return tokenString, nil
+	tokens := &Tokens{
+		accessTokenString,
+		refreshTokenString,
+		3600,
+		TokenType,
+	}
+
+	return tokens, nil
 }
 
 func ExtractJti(cfg *config.Config, tokenStr string) (string, error) {
@@ -158,7 +155,27 @@ func ExtractJti(cfg *config.Config, tokenStr string) (string, error) {
 	return "", err
 }
 
-func ExtractRefreshTokenJti(cfg *config.Config, tokenStr string) (string, error) {
+func ExtractTokenHash(cfg *config.Config, tokenStr string) (string, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		// check token signing method etc
+		return []byte(cfg.JWT.Secret), nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims["tokenHash"].(string), nil
+	}
+
+	return "", err
+}
+
+func ExtractRefreshTokenHash(cfg *config.Config, tokenStr string) (string, error) {
 	publicKeyFile, err := os.Open(cfg.JWT.PublicKeyPath)
 	if err != nil {
 		panic(err)
@@ -199,7 +216,7 @@ func ExtractRefreshTokenJti(cfg *config.Config, tokenStr string) (string, error)
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims["jti"].(string), nil
+		return claims["tokenHash"].(string), nil
 	}
 
 	return "", err

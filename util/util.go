@@ -1,11 +1,12 @@
 package util
 
 import (
-	"github.com/rainycape/unidecode"
-	"regexp"
-	"strings"
 	"crypto/md5"
 	"encoding/hex"
+	"regexp"
+	"strings"
+
+	"github.com/rainycape/unidecode"
 )
 
 func IsEmail(email string) bool {

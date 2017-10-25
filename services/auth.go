@@ -20,8 +20,6 @@ import (
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/models"
-	"crypto/md5"
-	"encoding/hex"
 	"github.com/steffen25/golang.zone/util"
 )
 

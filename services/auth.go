@@ -20,12 +20,21 @@ import (
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/models"
+	"crypto/md5"
+	"encoding/hex"
 )
 
 type TokenClaims struct {
 	jwt.StandardClaims
 	UID   int  `json:"id"`
 	Admin bool `json:"admin"`
+}
+
+type KAuthTokenClaims struct {
+	jwt.StandardClaims
+	UID   int  `json:"id"`
+	Admin bool `json:"admin"`
+	TokenHash string `json:"tokenHash"`
 }
 
 type AccessToken struct {
@@ -56,6 +65,7 @@ const (
 type JWTAuthService interface {
 	GenerateAccessToken(u *models.User) (string, error)
 	GenerateRefreshToken(u *models.User) (string, error)
+	GenerateTokens(u *models.User) (*Tokens, error)
 }
 
 type jwtAuthService struct {
@@ -108,6 +118,66 @@ func (jwtService *jwtAuthService) GenerateAccessToken(u *models.User) (string, e
 	return tokenString, nil
 }
 
+func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error) {
+	uid := strconv.Itoa(u.ID)
+	now := time.Now()
+	tokenHash := GetMD5Hash(now.String()+uid)
+	authClaims := KAuthTokenClaims{
+		jwt.StandardClaims{
+			Id:        uid + "." + uuid.NewV4().String(),
+			ExpiresAt: now.Add(TokenDuration).Unix(),
+			IssuedAt:  now.Unix(),
+		},
+		u.ID,
+		u.Admin,
+		tokenHash,
+	}
+
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)
+
+	accessTokenString, err := accessToken.SignedString([]byte(jwtService.secret))
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	err = jwtService.Redis.Set(tokenHash + "." + authClaims.Id, u.ID, TokenDuration).Err()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	refreshToken := jwt.New(jwt.SigningMethodRS512)
+	authClaims.Id = uid + "." + uuid.NewV4().String()
+	refreshToken.Claims = authClaims
+	refreshTokenString, err := refreshToken.SignedString(jwtService.privateKey)
+	if err != nil {
+		panic(err)
+		return nil, err
+	}
+
+	err = jwtService.Redis.Set(tokenHash + "." + authClaims.Id, u.ID, RefreshTokenDuration).Err()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	tokens := &Tokens{
+		accessTokenString,
+		refreshTokenString,
+		3600,
+		TokenType,
+	}
+
+	return tokens, nil
+}
+
+func GetMD5Hash(text string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
 // TODO: make something like this https://github.com/brainattica/golang-jwt-authentication-api-sample/blob/master/core/authentication/jwt_backend.go
 func (jwtService *jwtAuthService) GenerateRefreshToken(u *models.User) (string, error) {
 	uid := strconv.Itoa(u.ID)
@@ -158,6 +228,26 @@ func ExtractJti(cfg *config.Config, tokenStr string) (string, error) {
 	return "", err
 }
 
+func ExtractTokenHash(cfg *config.Config, tokenStr string) (string, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		// check token signing method etc
+		return []byte(cfg.JWT.Secret), nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims["tokenHash"].(string), nil
+	}
+
+	return "", err
+}
+
 func ExtractRefreshTokenJti(cfg *config.Config, tokenStr string) (string, error) {
 	publicKeyFile, err := os.Open(cfg.JWT.PublicKeyPath)
 	if err != nil {
@@ -200,6 +290,53 @@ func ExtractRefreshTokenJti(cfg *config.Config, tokenStr string) (string, error)
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims["jti"].(string), nil
+	}
+
+	return "", err
+}
+
+func ExtractRefreshTokenHash(cfg *config.Config, tokenStr string) (string, error) {
+	publicKeyFile, err := os.Open(cfg.JWT.PublicKeyPath)
+	if err != nil {
+		panic(err)
+	}
+
+	pemfileinfo, _ := publicKeyFile.Stat()
+	var size int64 = pemfileinfo.Size()
+	pembytes := make([]byte, size)
+
+	buffer := bufio.NewReader(publicKeyFile)
+	_, err = buffer.Read(pembytes)
+
+	data, _ := pem.Decode([]byte(pembytes))
+
+	publicKeyFile.Close()
+
+	publicKeyImported, err := x509.ParsePKIXPublicKey(data.Bytes)
+
+	if err != nil {
+		panic(err)
+	}
+
+	rsaPub, ok := publicKeyImported.(*rsa.PublicKey)
+	if !ok {
+		panic(err)
+	}
+
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		// check token signing method etc
+		return rsaPub, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims["tokenHash"].(string), nil
 	}
 
 	return "", err

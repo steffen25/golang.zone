@@ -4,6 +4,8 @@ import (
 	"github.com/rainycape/unidecode"
 	"regexp"
 	"strings"
+	"crypto/md5"
+	"encoding/hex"
 )
 
 func IsEmail(email string) bool {
@@ -23,4 +25,10 @@ func GenerateSlug(title string) string {
 	slug = strings.Trim(slug, "-")
 
 	return slug
+}
+
+func GetMD5Hash(text string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+	return hex.EncodeToString(hasher.Sum(nil))
 }

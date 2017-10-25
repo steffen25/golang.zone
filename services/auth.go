@@ -22,6 +22,7 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"crypto/md5"
 	"encoding/hex"
+	"github.com/steffen25/golang.zone/util"
 )
 
 type TokenClaims struct {
@@ -63,8 +64,6 @@ const (
 )
 
 type JWTAuthService interface {
-	GenerateAccessToken(u *models.User) (string, error)
-	GenerateRefreshToken(u *models.User) (string, error)
 	GenerateTokens(u *models.User) (*Tokens, error)
 }
 
@@ -84,44 +83,10 @@ func NewJWTAuthService(jwtCfg *config.JWTConfig, redis *database.RedisDB) JWTAut
 	}
 }
 
-func (jwtService *jwtAuthService) GenerateAccessToken(u *models.User) (string, error) {
-	uid := strconv.Itoa(u.ID)
-	authClaims := TokenClaims{
-		jwt.StandardClaims{
-			Id:        uid + "." + uuid.NewV4().String(),
-			ExpiresAt: time.Now().Add(TokenDuration).Unix(),
-			IssuedAt:  time.Now().Unix(),
-		},
-		u.ID,
-		u.Admin,
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)
-
-	tokenString, err := token.SignedString([]byte(jwtService.secret))
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-
-	/*uJson, err := json.Marshal(u)
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}*/
-	err = jwtService.Redis.Set(authClaims.Id, u.ID, TokenDuration).Err()
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-
-	return tokenString, nil
-}
-
 func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error) {
 	uid := strconv.Itoa(u.ID)
 	now := time.Now()
-	tokenHash := GetMD5Hash(now.String()+uid)
+	tokenHash := util.GetMD5Hash(now.String()+uid)
 	authClaims := KAuthTokenClaims{
 		jwt.StandardClaims{
 			Id:        uid + "." + uuid.NewV4().String(),
@@ -172,42 +137,6 @@ func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error
 	return tokens, nil
 }
 
-func GetMD5Hash(text string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(text))
-	return hex.EncodeToString(hasher.Sum(nil))
-}
-
-// TODO: make something like this https://github.com/brainattica/golang-jwt-authentication-api-sample/blob/master/core/authentication/jwt_backend.go
-func (jwtService *jwtAuthService) GenerateRefreshToken(u *models.User) (string, error) {
-	uid := strconv.Itoa(u.ID)
-	authClaims := TokenClaims{
-		jwt.StandardClaims{
-			Id:        uid + "." + uuid.NewV4().String(),
-			ExpiresAt: time.Now().Add(RefreshTokenDuration).Unix(),
-			IssuedAt:  time.Now().Unix(),
-		},
-		u.ID,
-		u.Admin,
-	}
-
-	token := jwt.New(jwt.SigningMethodRS512)
-	token.Claims = authClaims
-	tokenString, err := token.SignedString(jwtService.privateKey)
-	if err != nil {
-		panic(err)
-		return "", err
-	}
-
-	err = jwtService.Redis.Set(authClaims.Id, u.ID, RefreshTokenDuration).Err()
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-
-	return tokenString, nil
-}
-
 func ExtractJti(cfg *config.Config, tokenStr string) (string, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -243,53 +172,6 @@ func ExtractTokenHash(cfg *config.Config, tokenStr string) (string, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims["tokenHash"].(string), nil
-	}
-
-	return "", err
-}
-
-func ExtractRefreshTokenJti(cfg *config.Config, tokenStr string) (string, error) {
-	publicKeyFile, err := os.Open(cfg.JWT.PublicKeyPath)
-	if err != nil {
-		panic(err)
-	}
-
-	pemfileinfo, _ := publicKeyFile.Stat()
-	var size int64 = pemfileinfo.Size()
-	pembytes := make([]byte, size)
-
-	buffer := bufio.NewReader(publicKeyFile)
-	_, err = buffer.Read(pembytes)
-
-	data, _ := pem.Decode([]byte(pembytes))
-
-	publicKeyFile.Close()
-
-	publicKeyImported, err := x509.ParsePKIXPublicKey(data.Bytes)
-
-	if err != nil {
-		panic(err)
-	}
-
-	rsaPub, ok := publicKeyImported.(*rsa.PublicKey)
-	if !ok {
-		panic(err)
-	}
-
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-		// check token signing method etc
-		return rsaPub, nil
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims["jti"].(string), nil
 	}
 
 	return "", err

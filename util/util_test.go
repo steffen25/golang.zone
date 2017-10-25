@@ -48,6 +48,21 @@ func TestGenerateSlug(t *testing.T) {
 	}
 }
 
+func TestGetMD5Hash(t *testing.T) {
+	cases := []struct {
+		input, expected string
+	}{
+		{"123456", "e10adc3949ba59abbe56e057f20f883e"},
+		{"hello world", "5eb63bbbe01eeed093cb22bb8f5acdc3"},
+		{"👍", "0215ac4dab1ecaf71d83f98af5726984"},
+	}
+
+	for _, c := range cases {
+		output := GetMD5Hash(c.input)
+		equals(t, c.expected, output)
+	}
+}
+
 // TODO: Move this into its own test package or such for reusability
 // equals fails the test if exp is not equal to act.
 func equals(tb testing.TB, exp, act interface{}) {

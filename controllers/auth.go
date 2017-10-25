@@ -9,6 +9,7 @@ import (
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/util"
+	"github.com/steffen25/golang.zone/models"
 )
 
 type AuthController struct {
@@ -59,7 +60,15 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: tokens}, w, http.StatusOK)
+	data := struct {
+		Tokens *services.Tokens `json:"tokens"`
+		User *models.User `json:"user"`
+	}{
+		tokens,
+		u,
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: data}, w, http.StatusOK)
 }
 
 func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {

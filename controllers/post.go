@@ -20,6 +20,7 @@ import (
 type PostController struct {
 	*app.App
 	repositories.PostRepository
+	repositories.UserRepository
 }
 
 type PostPaginator struct {
@@ -35,8 +36,8 @@ type PostPaginator struct {
 	PrevPageUrl  *string `json:"prevPageUrl"`
 }
 
-func NewPostController(a *app.App, pr repositories.PostRepository) *PostController {
-	return &PostController{a, pr}
+func NewPostController(a *app.App, pr repositories.PostRepository, ur repositories.UserRepository) *PostController {
+	return &PostController{a, pr, ur}
 }
 
 func (pc *PostController) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -168,6 +169,14 @@ func (pc *PostController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Change this maybe put the user object into a context and get the author from there.
+	u, err := pc.UserRepository.FindById(uid)
+	if err != nil {
+		NewAPIError(&APIError{false, "Content is required", http.StatusBadRequest}, w)
+		return
+	}
+	post.Author = u.Name
+
 	defer r.Body.Close()
 	NewAPIResponse(&APIResponse{Success: true, Message: "Post created", Data: post}, w, http.StatusOK)
 }
@@ -228,5 +237,5 @@ func (pc *PostController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "Post updated"}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Message: "Post updated", Data: post}, w, http.StatusOK)
 }

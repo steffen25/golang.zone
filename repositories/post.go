@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"database/sql"
+
 	"github.com/steffen25/golang.zone/database"
 	"github.com/steffen25/golang.zone/models"
 )
@@ -46,10 +47,16 @@ func (pr *postRepository) Create(p *models.Post) error {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(p.Title, p.Slug, p.Body, p.CreatedAt.Format("20060102150405"), p.UserID)
+	result, err := stmt.Exec(p.Title, p.Slug, p.Body, p.CreatedAt.Format("20060102150405"), p.UserID)
 	if err != nil {
 		return err
 	}
+
+	pId, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	p.ID = int(pId)
 
 	return nil
 }
@@ -235,10 +242,18 @@ func (pr *postRepository) createWithSlugCount(p *models.Post) error {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(p.Title, p.Slug+"-"+counter, p.Body, p.CreatedAt.Format("20060102150405"), p.UserID)
+	result, err := stmt.Exec(p.Title, p.Slug+"-"+counter, p.Body, p.CreatedAt.Format("20060102150405"), p.UserID)
 	if err != nil {
 		return err
 	}
+
+	p.Slug = p.Slug + "-" + counter
+
+	pId, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	p.ID = int(pId)
 
 	return nil
 }

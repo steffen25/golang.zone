@@ -110,8 +110,8 @@ continue at step 8.
 9. Insert the code below then save and finally click send.
 ```javascript
 var jsonData = JSON.parse(responseBody);
-postman.setEnvironmentVariable("ACCESS_TOKEN", jsonData.data.accessToken);
-postman.setEnvironmentVariable("REFRESH_TOKEN", jsonData.data.refreshToken);
+postman.setEnvironmentVariable("ACCESS_TOKEN", jsonData.data.tokens.accessToken);
+postman.setEnvironmentVariable("REFRESH_TOKEN", jsonData.data.tokens.refreshToken);
 ```
 10. Now when you call endpoints that require authorization it will automatically insert the token value inside the Authorization header
 

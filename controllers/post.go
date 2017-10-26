@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"fmt"
+	"strconv"
+
 	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/steffen25/golang.zone/app"
@@ -13,7 +15,6 @@ import (
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
 	"github.com/steffen25/golang.zone/util"
-	"strconv"
 )
 
 type PostController struct {
@@ -168,7 +169,7 @@ func (pc *PostController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer r.Body.Close()
-	NewAPIResponse(&APIResponse{Success: true, Message: "Post created"}, w, http.StatusOK)
+	NewAPIResponse(&APIResponse{Success: true, Message: "Post created", Data: post}, w, http.StatusOK)
 }
 
 func (pc *PostController) Update(w http.ResponseWriter, r *http.Request) {

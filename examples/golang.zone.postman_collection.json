@@ -231,6 +231,34 @@
 						"description": ""
 					},
 					"response": []
+				},
+				{
+					"name": "Get post by id",
+					"request": {
+						"url": "{{BASE_URL}}/api/v1/posts/45",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get post by slug",
+					"request": {
+						"url": "{{BASE_URL}}/api/v1/posts/risus-augue-justo",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
 				}
 			]
 		},

@@ -8,8 +8,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User represents a user account
-// Make sure not to expose the password field when marshalling to json
+// User represents a user account for public visibility (used for public endpoints)
+// Its MarshalJSON function wont expose its role.
 type User struct {
 	ID        int            `json:"id"`
 	Name      string         `json:"name"`
@@ -20,6 +20,8 @@ type User struct {
 	UpdatedAt mysql.NullTime `json:"updatedAt"`
 }
 
+// AuthUser represents a user account for private visibility (used for login and update response)
+// Its MarshalJSON function will expose its role.
 type AuthUser struct {
 	*User
 	Admin bool `json:"admin"`

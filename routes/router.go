@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"github.com/gorilla/mux"
 
 	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/controllers"
@@ -24,7 +25,7 @@ func NewRouter(a *app.App) *mux.Router {
 	// Controllers
 	ac := controllers.NewAuthController(a, ur, jwtAuth)
 	uc := controllers.NewUserController(a, ur, pr)
-	pc := controllers.NewPostController(a, pr)
+	pc := controllers.NewPostController(a, pr, ur)
 
 	r.HandleFunc("/", middlewares.Logger(uc.HelloWorld)).Methods(http.MethodGet)
 

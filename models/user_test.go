@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"testing"
 	"time"
+
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -49,6 +50,30 @@ func TestMarshalJSON(t *testing.T) {
 	equals(t, string(json), expectedJson)
 }
 
+func TestMarshalJSONAuthUser(t *testing.T) {
+	u := &User{
+		Name:      "Steffen",
+		Email:     "steffen@email.com",
+		Admin:     false,
+		CreatedAt: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+		UpdatedAt: mysql.NullTime{Time: time.Date(2009, time.November, 10, 23, 1, 0, 0, time.UTC), Valid: true},
+	}
+
+	authUser := &AuthUser{
+		User:  u,
+		Admin: u.Admin,
+	}
+
+	json, e := authUser.MarshalJSON()
+	if e != nil {
+		t.Fail()
+	}
+
+	expectedJson := "{\"id\":0,\"name\":\"Steffen\",\"email\":\"steffen@email.com\",\"admin\":false,\"createdAt\":\"2009-11-10T23:00:00Z\",\"updatedAt\":\"2009-11-10T23:01:00Z\"}"
+
+	equals(t, string(json), expectedJson)
+}
+
 func TestMarshalJSONEmptyUpdatedAt(t *testing.T) {
 	u := &User{
 		Name:      "Thomas",
@@ -66,6 +91,36 @@ func TestMarshalJSONEmptyUpdatedAt(t *testing.T) {
 	expectedJson := "{\"id\":0,\"name\":\"Thomas\",\"email\":\"thomas@email.com\",\"createdAt\":\"2009-11-10T23:00:00Z\",\"updatedAt\":null}"
 
 	equals(t, string(json), expectedJson)
+}
+
+func TestMarshalJSONAuthUserEmptyUpdatedAt(t *testing.T) {
+	u := &User{
+		Name:      "Steffen",
+		Email:     "steffen@email.com",
+		Admin:     false,
+		CreatedAt: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+		UpdatedAt: mysql.NullTime{Time: time.Time{}, Valid: false},
+	}
+
+	authUser := &AuthUser{
+		User:  u,
+		Admin: u.Admin,
+	}
+
+	json, e := authUser.MarshalJSON()
+	if e != nil {
+		t.Fail()
+	}
+
+	expectedJson := "{\"id\":0,\"name\":\"Steffen\",\"email\":\"steffen@email.com\",\"admin\":false,\"createdAt\":\"2009-11-10T23:00:00Z\",\"updatedAt\":null}"
+
+	equals(t, string(json), expectedJson)
+}
+
+func TestIsUserAdmin(t *testing.T) {
+	u := createUser()
+	u.Admin = true
+	equals(t, true, u.IsAdmin())
 }
 
 func createUser() *User {

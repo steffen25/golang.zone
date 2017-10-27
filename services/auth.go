@@ -112,6 +112,7 @@ func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error
 
 	refreshToken := jwt.New(jwt.SigningMethodRS512)
 	authClaims.Id = uid + "." + uuid.NewV4().String()
+	authClaims.ExpiresAt = now.Add(RefreshTokenDuration).Unix()
 	refreshToken.Claims = authClaims
 	refreshTokenString, err := refreshToken.SignedString(jwtService.privateKey)
 	if err != nil {

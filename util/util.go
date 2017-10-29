@@ -7,6 +7,8 @@ import (
 	"strings"
 	"unicode"
 
+	"bytes"
+
 	"github.com/rainycape/unidecode"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
@@ -39,8 +41,14 @@ func GetMD5Hash(text string) string {
 }
 
 func CleanZalgoText(str string) string {
+	b := make([]byte, len(str))
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
-	result, _, _ := transform.String(t, str)
+	_, _, e := t.Transform(b, []byte(str), true)
+	if e != nil {
+		panic(e)
+	}
 
-	return result
+	b = bytes.Trim(b, "\x00")
+
+	return string(b)
 }

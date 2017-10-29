@@ -1,7 +1,9 @@
 package util
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -75,6 +77,21 @@ func TestCleanZalgoText(t *testing.T) {
 
 	for _, c := range cases {
 		output := CleanZalgoText(c.input)
+		equals(t, c.expected, output)
+	}
+}
+
+func TestGetRequestScheme(t *testing.T) {
+	cases := []struct {
+		input    *http.Request
+		expected string
+	}{
+		{&http.Request{}, "http://"},
+		{&http.Request{TLS: &tls.ConnectionState{}}, "https://"},
+	}
+
+	for _, c := range cases {
+		output := GetRequestScheme(c.input)
 		equals(t, c.expected, output)
 	}
 }

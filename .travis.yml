@@ -5,10 +5,11 @@ go:
 - 1.8
 - 1.9
 - master
-services:
-  - mysql
 before_install:
-  - mysql -u root < ci.sql
+  - chmod +x travis_mysql_5_7.sh
+  - chmod +x travis_mysql_reset_root_password.sh
+  - ./travis_mysql_5_7.sh
+  - ./travis_mysql_reset_root_password.sh
   - go get github.com/mattn/goveralls
 script:
 - $GOPATH/bin/goveralls -service=travis-ci

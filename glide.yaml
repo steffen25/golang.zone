@@ -12,6 +12,11 @@ import:
 - package: golang.org/x/crypto
   subpackages:
   - bcrypt
+- package: golang.org/x/text
+  subpackages:
+  - transform
+  - unicode/norm
+  - secure/precis
 - package: github.com/pressly/goose
   version: v2.1.0
   subpackages:

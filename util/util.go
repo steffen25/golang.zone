@@ -5,8 +5,12 @@ import (
 	"encoding/hex"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/rainycape/unidecode"
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 func IsEmail(email string) bool {
@@ -32,4 +36,11 @@ func GetMD5Hash(text string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(text))
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func CleanZalgoText(str string) string {
+	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+	result, _, _ := transform.String(t, str)
+
+	return result
 }

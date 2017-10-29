@@ -1,7 +1,6 @@
 package util
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -82,12 +81,14 @@ func TestCleanZalgoText(t *testing.T) {
 }
 
 func TestGetRequestScheme(t *testing.T) {
+	m := make(map[string][]string)
+	m["X-Forwarded-Proto"] = []string{"https"}
 	cases := []struct {
 		input    *http.Request
 		expected string
 	}{
 		{&http.Request{}, "http://"},
-		{&http.Request{TLS: &tls.ConnectionState{}}, "https://"},
+		{&http.Request{Header: m}, "https://"},
 	}
 
 	for _, c := range cases {

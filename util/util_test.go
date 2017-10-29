@@ -63,6 +63,22 @@ func TestGetMD5Hash(t *testing.T) {
 	}
 }
 
+func TestCleanZalgoText(t *testing.T) {
+	cases := []struct {
+		input, expected string
+	}{
+		{"1̴2̷3̵4̸", "1234"},
+		{"h̸e̴l̵l̸o̴ ̴w̵o̶r̷l̷d̶", "hello world"},
+		{"w̷̝̹͐͝w̴͔̏w̴͙͊͒.̷̡̥̄ķ̴̱̅͌a̴̢͌ḛ̴̲̏m̷̫̾.̴̰̋̑d̸̺͕̾k̵̤̂̈", "www.kaem.dk"},
+		{"h̴̛̭̱̹̃͐͊t̸̞̪͒̒̈́ͅt̶̛̯̒̓̈́ͅp̸͚̺̗͒̎̃s̷̩̲̫̹͗͑͝:̴̝̮̦͕̒͊̋/̸̨̻̜͈͘͘/̸̠̝̋ǧ̷̹̲̜͉͒͘̚o̵̯̹͎̿l̴̲͇̠̔̆̽͜ḁ̴̠̥̰͆̏̽n̶̻̗̼̓͝ͅg̶̗̮̖̣͘.̸̠̩̪̏z̸̤̥̺̏͋̍ö̵̰̩̗̝́ǹ̷̯͕̗̱e̷̡̖͆", "https://golang.zone"},
+	}
+
+	for _, c := range cases {
+		output := CleanZalgoText(c.input)
+		equals(t, c.expected, output)
+	}
+}
+
 // TODO: Move this into its own test package or such for reusability
 // equals fails the test if exp is not equal to act.
 func equals(tb testing.TB, exp, act interface{}) {

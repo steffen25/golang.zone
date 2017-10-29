@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"strings"
 	"time"
 
 	"fmt"
@@ -149,15 +148,35 @@ func (pc *PostController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	title = util.CleanZalgoText(title)
+
+	if len(title) < 10 {
+		NewAPIError(&APIError{false, "Title is too short", http.StatusBadRequest}, w)
+		return
+	}
+
+	slug := util.GenerateSlug(title)
+	if len(slug) == 0 {
+		NewAPIError(&APIError{false, "Title is invalid", http.StatusBadRequest}, w)
+		return
+	}
+
 	body, err := j.GetString("body")
 	if err != nil {
 		NewAPIError(&APIError{false, "Content is required", http.StatusBadRequest}, w)
 		return
 	}
 
+	body = util.CleanZalgoText(body)
+
+	if len(body) < 10 {
+		NewAPIError(&APIError{false, "Body is too short", http.StatusBadRequest}, w)
+		return
+	}
+
 	post := &models.Post{
 		Title:     title,
-		Slug:      util.GenerateSlug(title),
+		Slug:      slug,
 		Body:      body,
 		CreatedAt: time.Now(),
 		UserID:    uid,
@@ -212,25 +231,37 @@ func (pc *PostController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	title = util.CleanZalgoText(title)
+
+	if len(title) < 10 {
+		NewAPIError(&APIError{false, "Title is too short", http.StatusBadRequest}, w)
+		return
+	}
+
+	slug := util.GenerateSlug(title)
+	if len(slug) == 0 {
+		NewAPIError(&APIError{false, "Title is invalid", http.StatusBadRequest}, w)
+		return
+	}
+
 	body, err := j.GetString("body")
 	if err != nil {
 		NewAPIError(&APIError{false, "Content is required", http.StatusBadRequest}, w)
 		return
 	}
-	if len(strings.Fields(title)) < 2 {
-		NewAPIError(&APIError{false, "Title is too short", http.StatusBadRequest}, w)
-		return
-	}
 
-	if len(strings.Fields(body)) < 5 {
+	body = util.CleanZalgoText(body)
+
+	if len(body) < 10 {
 		NewAPIError(&APIError{false, "Body is too short", http.StatusBadRequest}, w)
 		return
 	}
+
 	post.UserID = uid
 	post.UpdatedAt = mysql.NullTime{Time: time.Now(), Valid: true}
 	post.Title = title
 	post.Body = body
-	post.Slug = util.GenerateSlug(title)
+	post.Slug = slug
 	err = pc.PostRepository.Update(post)
 	if err != nil {
 		NewAPIError(&APIError{false, "Could not update post", http.StatusBadRequest}, w)

@@ -20,7 +20,7 @@
     <img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=golang.zone" >
   </a>
 
-  <a href="LICENSE.md">
+  <a href="LICENSE">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt=""></a>
 
 </p>

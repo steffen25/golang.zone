@@ -55,6 +55,7 @@ func CleanZalgoText(str string) string {
 }
 
 func GetRequestScheme(r *http.Request) string {
+	// TODO: Find a better solution below depends on your nginx config.
 	isHTTPS := r.Header.Get("X-Forwarded-Proto") == "https"
 	if isHTTPS {
 		return "https://"

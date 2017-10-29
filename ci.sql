@@ -1,7 +1,7 @@
-CREATE DATABASE IF NOT EXISTS `golang-zone-ci` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `golang-zone-ci` DEFAULT CHARACTER SET utf8 COLLATE utf8mb4_unicode_ci;
 
 USE `golang-zone-ci`;
-SET @@global.innodb_large_prefix = 1;
+
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,

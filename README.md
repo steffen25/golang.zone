@@ -1,9 +1,32 @@
+<p align="center">
+    <img src="https://i.imgur.com/rZY34qI.png" height="130">
+</p>
+<p align="center">
+
+  <a href="https://travis-ci.org/steffen25/golang.zone">
+  	<img src="https://travis-ci.org/steffen25/golang.zone.svg?branch=master"
+  alt="">
+  </a>
+
+  <a href="https://goreportcard.com/report/github.com/steffen25/golang.zone">
+  	<img src="https://goreportcard.com/badge/github.com/steffen25/golang.zone" alt="">
+  </a>
+  
+  <a href="https://coveralls.io/github/steffen25/golang.zone?branch=master">
+  	<img src="https://coveralls.io/repos/github/steffen25/golang.zone/badge.svg?branch=master" alt="">
+  </a>
+
+  <a href="https://golang.zone">
+    <img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=golang.zone" >
+  </a>
+
+  <a href="LICENSE">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt=""></a>
+
+</p>
+
+
 # golang.zone
-
-[![Build Status](https://travis-ci.org/steffen25/golang.zone.svg?branch=master)](https://travis-ci.org/steffen25/golang.zone) 
-[![Go Report Card](https://goreportcard.com/badge/github.com/steffen25/golang.zone)](https://goreportcard.com/report/github.com/steffen25/golang.zone)
-[![Coverage Status](https://coveralls.io/repos/github/steffen25/golang.zone/badge.svg?branch=master)](https://coveralls.io/github/steffen25/golang.zone?branch=master)
-
 Home of golang.zone
 
 This repository holds the files for the REST API of https://golang.zone

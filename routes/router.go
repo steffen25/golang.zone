@@ -14,7 +14,6 @@ import (
 
 func NewRouter(a *app.App) *mux.Router {
 	r := mux.NewRouter()
-	r.PathPrefix("/public").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public/"))))
 	// Repositories
 	ur := repositories.NewUserRespository(a.Database)
 	pr := repositories.NewPostRepository(a.Database)
@@ -26,10 +25,15 @@ func NewRouter(a *app.App) *mux.Router {
 	ac := controllers.NewAuthController(a, ur, jwtAuth)
 	uc := controllers.NewUserController(a, ur, pr)
 	pc := controllers.NewPostController(a, pr, ur)
+	uploadController := controllers.NewUploadController()
 
 	r.HandleFunc("/", middlewares.Logger(uc.HelloWorld)).Methods(http.MethodGet)
 
 	api := r.PathPrefix("/api/v1").Subrouter()
+
+	// Uploads
+	api.HandleFunc("/images/upload", middlewares.Logger(middlewares.RequireAuthentication(a, uploadController.UploadImage, true))).Methods(http.MethodPost)
+
 	// Users
 	api.HandleFunc("/users", middlewares.Logger(uc.GetAll)).Methods(http.MethodGet)
 	api.HandleFunc("/users", middlewares.Logger(uc.Create)).Methods(http.MethodPost)

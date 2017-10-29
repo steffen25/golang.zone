@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"net/http"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -75,6 +76,23 @@ func TestCleanZalgoText(t *testing.T) {
 
 	for _, c := range cases {
 		output := CleanZalgoText(c.input)
+		equals(t, c.expected, output)
+	}
+}
+
+func TestGetRequestScheme(t *testing.T) {
+	m := make(map[string][]string)
+	m["X-Forwarded-Proto"] = []string{"https"}
+	cases := []struct {
+		input    *http.Request
+		expected string
+	}{
+		{&http.Request{}, "http://"},
+		{&http.Request{Header: m}, "https://"},
+	}
+
+	for _, c := range cases {
+		output := GetRequestScheme(c.input)
 		equals(t, c.expected, output)
 	}
 }

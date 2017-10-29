@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gorilla/mux"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/steffen25/golang.zone/app"

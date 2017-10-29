@@ -7,8 +7,10 @@ go:
 - master
 services:
   - mysql
-before_install:
+before_script:
   - echo -e "[mysqld]\ninnodb_large_prefix=1" | sudo tee -a /etc/mysql/my.cnf
+  - sudo service mysql restart
+before_install:
   - mysql -u root < ci.sql
   - go get github.com/mattn/goveralls
 script:

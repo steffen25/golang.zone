@@ -169,6 +169,33 @@
 					"response": []
 				},
 				{
+					"name": "Upload image wysiwyg editor",
+					"request": {
+						"url": "{{BASE_URL}}/api/v1/images/upload",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{ACCESS_TOKEN}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"value": "",
+									"description": "",
+									"type": "file"
+								}
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "Update post",
 					"request": {
 						"url": "{{BASE_URL}}/api/v1/posts/14",

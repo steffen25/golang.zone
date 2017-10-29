@@ -8,8 +8,7 @@ go:
 services:
   - mysql
 before_install:
-  - ls
-  - mysql -u root --password="" < ci.sql
+  - mysql -u root < ci.sql
   - go get github.com/mattn/goveralls
 script:
 - $GOPATH/bin/goveralls -service=travis-ci

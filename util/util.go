@@ -3,6 +3,7 @@ package util
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"net/http"
 	"regexp"
 	"strings"
 	"unicode"
@@ -51,4 +52,13 @@ func CleanZalgoText(str string) string {
 	b = bytes.Trim(b, "\x00")
 
 	return string(b)
+}
+
+func GetRequestScheme(r *http.Request) string {
+	isHTTPS := r.TLS != nil
+	if isHTTPS {
+		return "https://"
+	}
+
+	return "http://"
 }

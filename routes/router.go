@@ -14,7 +14,6 @@ import (
 
 func NewRouter(a *app.App) *mux.Router {
 	r := mux.NewRouter()
-	r.PathPrefix("/public").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public/images/"))))
 	// Repositories
 	ur := repositories.NewUserRespository(a.Database)
 	pr := repositories.NewPostRepository(a.Database)

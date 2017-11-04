@@ -41,8 +41,8 @@ You need to make a config file in the config directory - below is an example of 
   "mysql": {
     "host": "app_mysql",
     "username": "root",
-    "password": "root",
-    "database": "database_name",
+    "password": "password",
+    "database": "app",
     "encoding": "utf8mb4",
     "port": "3306"
   },

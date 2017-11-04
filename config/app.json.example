@@ -3,8 +3,8 @@
   "mysql": {
     "host": "app_mysql",
     "username": "root",
-    "password": "root",
-    "database": "database_name",
+    "password": "password",
+    "database": "app",
     "encoding": "utf8mb4",
     "port": "3306"
   },
@@ -16,6 +16,6 @@
       "secret": "secret",
       "public_key_path": "config/api.rsa.pub",
       "private_key_path": "config/api.rsa"
-  ,
+  },
   "port": 8080
 }

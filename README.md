@@ -159,3 +159,8 @@ Development - Since linking the local folder to container we can edit code and r
 ```sh
 docker-compose up
 ```
+
+# To do
+- [ ] Add categories for posts
+- [ ] Add tags for posts
+- [ ] Add featured image for posts

@@ -116,7 +116,7 @@ func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error
 	refreshToken.Claims = authClaims
 	refreshTokenString, err := refreshToken.SignedString(jwtService.privateKey)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 		return nil, err
 	}
 

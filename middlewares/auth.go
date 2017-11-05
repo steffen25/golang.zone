@@ -32,11 +32,11 @@ func RequireAuthentication(a *app.App, next http.HandlerFunc, admin bool) http.H
 
 		if err != nil {
 			if err == request.ErrNoTokenInRequest {
-				controllers.NewAPIError(&controllers.APIError{false, "Missing token", http.StatusUnauthorized}, w)
+				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Missing token", Status: http.StatusUnauthorized}, w)
 				return
 			}
 
-			controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
+			controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Invalid token", Status: http.StatusUnauthorized}, w)
 			return
 		}
 
@@ -45,7 +45,7 @@ func RequireAuthentication(a *app.App, next http.HandlerFunc, admin bool) http.H
 			tokenHash := claims["tokenHash"].(string)
 			val, err := a.Redis.Get(tokenHash + "." + jti).Result()
 			if err != nil || val == "" {
-				controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
+				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Invalid token", Status: http.StatusUnauthorized}, w)
 				return
 			}
 			// TODO: Put the user into the context instead of the user id? Right now we only need to reference to the id of the user that is logged in
@@ -78,7 +78,7 @@ func RequireAuthentication(a *app.App, next http.HandlerFunc, admin bool) http.H
 			// Check if the user's token has admin true
 			isAdmin := claims["admin"].(bool)
 			if !isAdmin {
-				controllers.NewAPIError(&controllers.APIError{false, "Admin required", http.StatusForbidden}, w)
+				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Admin required", Status: http.StatusForbidden}, w)
 				return
 			}
 			next(w, r.WithContext(ctx))
@@ -128,11 +128,11 @@ func RequireRefreshToken(a *app.App, next http.HandlerFunc) http.HandlerFunc {
 
 		if err != nil {
 			if err == request.ErrNoTokenInRequest {
-				controllers.NewAPIError(&controllers.APIError{false, "Missing token", http.StatusUnauthorized}, w)
+				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Missing token", Status: http.StatusUnauthorized}, w)
 				return
 			}
 
-			controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
+			controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Invalid token", Status: http.StatusUnauthorized}, w)
 			return
 		}
 
@@ -141,7 +141,7 @@ func RequireRefreshToken(a *app.App, next http.HandlerFunc) http.HandlerFunc {
 			tokenHash := claims["tokenHash"].(string)
 			val, err := a.Redis.Get(tokenHash + "." + jti).Result()
 			if err != nil || val == "" {
-				controllers.NewAPIError(&controllers.APIError{false, "Invalid token", http.StatusUnauthorized}, w)
+				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Invalid token", Status: http.StatusUnauthorized}, w)
 				return
 			}
 

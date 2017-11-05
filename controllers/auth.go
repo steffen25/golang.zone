@@ -158,7 +158,7 @@ func (ac *AuthController) RefreshTokens(w http.ResponseWriter, r *http.Request) 
 	for _, token := range keys.Val() {
 		err := ac.App.Redis.Del(token).Err()
 		if err != nil {
-			log.Println("Could not delete token: %s ; error: %v", token, err)
+			log.Printf("Could not delete token: %s ; error: %v", token, err)
 			NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 			return
 		}

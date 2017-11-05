@@ -5,6 +5,10 @@ go:
 - 1.8
 - 1.9
 - master
+matrix:
+  allow_failures:
+    - go: master
+  fast_finish: true
 before_install:
   - go get github.com/mattn/goveralls
 script:

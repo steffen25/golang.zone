@@ -39,7 +39,7 @@ func (uc *UploadController) UploadImage(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var Buf bytes.Buffer
-	file, header, err := r.FormFile("image")
+	file, _, err := r.FormFile("image")
 	if err != nil {
 		if err == http.ErrMissingFile {
 			NewAPIError(&APIError{false, "Image is required", http.StatusBadRequest}, w)
@@ -53,10 +53,10 @@ func (uc *UploadController) UploadImage(w http.ResponseWriter, r *http.Request) 
 	io.Copy(&Buf, file)
 
 	fileExtension := http.DetectContentType(Buf.Bytes())
-	validFileExtensions := map[string]interface{}{
-		"image/jpeg": nil,
-		"image/png":  nil,
-		"image/gif":  nil,
+	validFileExtensions := map[string]string{
+		"image/jpeg": ".jpg",
+		"image/png":  ".png",
+		"image/gif":  ".gif",
 	}
 
 	if _, ok := validFileExtensions[fileExtension]; !ok {
@@ -64,13 +64,12 @@ func (uc *UploadController) UploadImage(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	name := strings.Split(header.Filename, ".")
-	fileExt := name[len(name)-1]
+	ext := validFileExtensions[fileExtension]
 
 	now := time.Now()
 	fileName := now.Format("2006-01-02_15-04-05") + "_" + util.GetMD5Hash(now.String())
 
-	err = ioutil.WriteFile("./public/images/"+fileName+"."+fileExt, Buf.Bytes(), 0644)
+	err = ioutil.WriteFile("./public/images/"+fileName+ext, Buf.Bytes(), 0644)
 	if err != nil {
 		NewAPIError(&APIError{false, "Could not write file to disk", http.StatusInternalServerError}, w)
 		return
@@ -79,7 +78,7 @@ func (uc *UploadController) UploadImage(w http.ResponseWriter, r *http.Request) 
 	Buf.Reset()
 
 	// TODO: Remove hardcoded url
-	imageSrc := util.GetRequestScheme(r) + r.Host + "/assets/" + fileName + "." + fileExt
+	imageSrc := util.GetRequestScheme(r) + r.Host + "/assets/" + fileName + ext
 
 	data := UploadImageResponse{imageSrc}
 

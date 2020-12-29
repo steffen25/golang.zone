@@ -21,6 +21,10 @@ services:
       - app_network
     environment:
       - GOPATH=/go
+    logging:
+      options:
+        max-size: 100m
+        max-file: "10"
 
   app_mysql:
     image: mysql:5.7

@@ -30,12 +30,12 @@ func (ur *userRepository) Create(u *models.User) error {
 
 	// Check if an user already exists with the email
 	// Prepare statement for inserting data
-	stmt, err := ur.DB.Prepare("INSERT INTO users SET name=?, email=?, password=?, created_at=?")
+	stmt, err := ur.DB.Prepare("INSERT INTO users SET name=?, email=?, password=?, created_at=?, updated_at=?")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(u.Name, u.Email, u.Password, u.CreatedAt.Format("20060102150405"))
+	_, err = stmt.Exec(u.Name, u.Email, u.Password, u.CreatedAt.Format("20060102150405"), u.CreatedAt.Format("20060102150405"))
 	if err != nil {
 		return err
 	}

@@ -23,6 +23,11 @@ import (
 	"github.com/steffen25/golang.zone/util"
 )
 
+const (
+	AccessTokenCookieName  = "golang_zone_access_token"
+	RefreshTokenCookieName = "golang_zone_refresh_token"
+)
+
 type TokenClaims struct {
 	jwt.StandardClaims
 	UID   int  `json:"id"`
@@ -70,6 +75,20 @@ type jwtAuthService struct {
 	privateKey *rsa.PrivateKey
 	PublicKey  *rsa.PublicKey
 	Redis      *database.RedisDB
+}
+
+type CookieJWTExtractor struct {
+	CookieName string
+	request.Extractor
+}
+
+func (c CookieJWTExtractor) ExtractToken(req *http.Request) (string, error) {
+	tokenCookie, err := req.Cookie(c.CookieName)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenCookie.Value, nil
 }
 
 func NewJWTAuthService(jwtCfg *config.JWTConfig, redis *database.RedisDB) JWTAuthService {
@@ -269,7 +288,10 @@ func GetRefreshTokenFromRequest(cfg *config.Config, r *http.Request) (string, er
 	if !ok {
 		panic(err)
 	}
-	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
+
+	var token *jwt.Token
+
+	token, err = request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -277,6 +299,23 @@ func GetRefreshTokenFromRequest(cfg *config.Config, r *http.Request) (string, er
 
 			return rsaPub, nil
 		})
+
+	if err != nil {
+		if err == request.ErrNoTokenInRequest {
+			cookieExtractor := CookieJWTExtractor{
+				CookieName: RefreshTokenCookieName,
+			}
+			token, err = request.ParseFromRequest(r, cookieExtractor, func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+				}
+
+				return rsaPub, nil
+			})
+		} else {
+			return "", err
+		}
+	}
 
 	if err != nil || !token.Valid {
 		return "", err

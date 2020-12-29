@@ -21,6 +21,8 @@ import (
 func RequireAuthentication(a *app.App, next http.HandlerFunc, admin bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		var t *jwt.Token
+
 		t, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
 			func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -32,12 +34,26 @@ func RequireAuthentication(a *app.App, next http.HandlerFunc, admin bool) http.H
 
 		if err != nil {
 			if err == request.ErrNoTokenInRequest {
-				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Missing token", Status: http.StatusUnauthorized}, w)
+				// try cookie
+				cookieExtractor := services.CookieJWTExtractor{
+					CookieName: services.AccessTokenCookieName,
+				}
+				t, err = request.ParseFromRequest(r, cookieExtractor, func(token *jwt.Token) (interface{}, error) {
+					if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+						return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+					}
+
+					return []byte(a.Config.JWT.Secret), nil
+				})
+
+				if err != nil {
+					controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Missing token", Status: http.StatusUnauthorized}, w)
+					return
+				}
+			} else {
+				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Invalid token", Status: http.StatusUnauthorized}, w)
 				return
 			}
-
-			controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Invalid token", Status: http.StatusUnauthorized}, w)
-			return
 		}
 
 		if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
@@ -117,7 +133,9 @@ func RequireRefreshToken(a *app.App, next http.HandlerFunc) http.HandlerFunc {
 			panic(err)
 		}
 
-		t, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
+		var t *jwt.Token
+
+		t, err = request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
 			func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -128,12 +146,26 @@ func RequireRefreshToken(a *app.App, next http.HandlerFunc) http.HandlerFunc {
 
 		if err != nil {
 			if err == request.ErrNoTokenInRequest {
-				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Missing token", Status: http.StatusUnauthorized}, w)
+				// try cookie
+				cookieExtractor := services.CookieJWTExtractor{
+					CookieName: services.RefreshTokenCookieName,
+				}
+				t, err = request.ParseFromRequest(r, cookieExtractor, func(token *jwt.Token) (interface{}, error) {
+					if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+						return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+					}
+
+					return rsaPub, nil
+				})
+
+				if err != nil {
+					controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Missing token", Status: http.StatusUnauthorized}, w)
+					return
+				}
+			} else {
+				controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Invalid token", Status: http.StatusUnauthorized}, w)
 				return
 			}
-
-			controllers.NewAPIError(&controllers.APIError{Success: false, Message: "Invalid token", Status: http.StatusUnauthorized}, w)
-			return
 		}
 
 		if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {

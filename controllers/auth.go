@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/models"
@@ -72,6 +73,35 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 		tokens,
 		authUser,
 	}
+
+	accessTokenExpire := time.Now().Add(services.TokenDuration)
+
+	accessTokenCookie := &http.Cookie{
+		Name:  services.AccessTokenCookieName,
+		Value: tokens.AccessToken,
+		Path:  "/",
+		//Domain:     "golang.zone",
+		Expires:  accessTokenExpire,
+		Secure:   false,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	refreshTokenExpire := time.Now().Add(services.RefreshTokenDuration)
+
+	refreshTokenCookie := &http.Cookie{
+		Name:  services.RefreshTokenCookieName,
+		Value: tokens.RefreshToken,
+		Path:  "/",
+		//Domain:     "golang.zone",
+		Expires:  refreshTokenExpire,
+		Secure:   false,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	http.SetCookie(w, accessTokenCookie)
+	http.SetCookie(w, refreshTokenCookie)
 
 	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: data}, w, http.StatusOK)
 }
@@ -163,6 +193,35 @@ func (ac *AuthController) RefreshTokens(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	}
+
+	accessTokenExpire := time.Now().Add(services.TokenDuration)
+
+	accessTokenCookie := &http.Cookie{
+		Name:  services.AccessTokenCookieName,
+		Value: tokens.AccessToken,
+		Path:  "/",
+		//Domain:     "golang.zone",
+		Expires:  accessTokenExpire,
+		Secure:   false,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	refreshTokenExpire := time.Now().Add(services.RefreshTokenDuration)
+
+	refreshTokenCookie := &http.Cookie{
+		Name:  services.RefreshTokenCookieName,
+		Value: tokens.RefreshToken,
+		Path:  "/",
+		//Domain:     "golang.zone",
+		Expires:  refreshTokenExpire,
+		Secure:   false,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	http.SetCookie(w, accessTokenCookie)
+	http.SetCookie(w, refreshTokenCookie)
 
 	NewAPIResponse(&APIResponse{Success: true, Message: "Refresh successful", Data: tokens}, w, http.StatusOK)
 }

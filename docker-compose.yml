@@ -13,7 +13,7 @@ services:
       - app_mysql
       - app_redis
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - .:/go/src/github.com/steffen25/golang.zone/
       - app_api_src_data:/go/src
@@ -23,10 +23,10 @@ services:
       - GOPATH=/go
 
   app_mysql:
-    image: mysql
+    image: mysql:5.7
     container_name: app_mysql
     ports:
-      - 3306:3306
+      - 127.0.0.1:3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: "password"
       MYSQL_DATABASE: "app"
@@ -38,10 +38,10 @@ services:
       - app_network
 
   app_redis:
-    image: redis
+    image: redis:6
     container_name: app_redis
     ports:
-      - 6379:6379
+      - 127.0.0.1:6379:6379
     volumes:
       - app_redis_data:/data
     networks:

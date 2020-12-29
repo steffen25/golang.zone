@@ -1,4 +1,4 @@
-FROM golang:1.9.0
+FROM golang:1.15.6
 
 RUN go get github.com/Masterminds/glide
 RUN go get -u github.com/pressly/goose/cmd/goose

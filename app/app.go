@@ -31,13 +31,18 @@ func New(cfg config.Config) *App {
 }
 
 func (a *App) Run(r *mux.Router) {
-	headersOk := handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "X-Requested-With"})
-	originsOk := handlers.AllowedOrigins([]string{"*"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	var corsOptions []handlers.CORSOption
+	if !a.IsProd() {
+		creds := handlers.AllowCredentials()
+		corsOptions = append(corsOptions, creds)
+	}
+	corsOptions = append(corsOptions, handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "X-Requested-With"}))
+	corsOptions = append(corsOptions, handlers.AllowedOrigins([]string{"*"}))
+	corsOptions = append(corsOptions, handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"}))
 	port := a.Config.Port
 	addr := fmt.Sprintf(":%v", port)
 	fmt.Printf("APP is listening on port: %d\n", port)
-	log.Fatal(http.ListenAndServe(addr, handlers.CORS(originsOk, headersOk, methodsOk)(r)))
+	log.Fatal(http.ListenAndServe(addr, handlers.CORS(corsOptions...)(r)))
 }
 
 func (a *App) IsProd() bool {

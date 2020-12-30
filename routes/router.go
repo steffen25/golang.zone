@@ -51,6 +51,7 @@ func NewRouter(a *app.App) *mux.Router {
 	// Authentication
 	auth := api.PathPrefix("/auth").Subrouter()
 	auth.HandleFunc("/login", middlewares.Logger(ac.Authenticate)).Methods(http.MethodPost)
+	auth.HandleFunc("/me", middlewares.Logger(middlewares.RequireAuthentication(a, ac.Me, false))).Methods(http.MethodGet)
 	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireRefreshToken(a, ac.RefreshTokens))).Methods(http.MethodGet)
 	auth.HandleFunc("/update", middlewares.Logger(middlewares.RequireAuthentication(a, uc.Update, false))).Methods(http.MethodPut)
 	auth.HandleFunc("/logout", middlewares.Logger(middlewares.RequireAuthentication(a, ac.Logout, false))).Methods(http.MethodGet)

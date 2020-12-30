@@ -23,6 +23,23 @@ func NewAuthController(a *app.App, us repositories.UserRepository, jwtService se
 	return &AuthController{a, us, jwtService}
 }
 
+func (ac *AuthController) Me(w http.ResponseWriter, r *http.Request) {
+	uid, err := services.UserIdFromContext(r.Context())
+	if err != nil {
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		return
+	}
+
+	user, err := ac.UserRepository.FindById(uid)
+	if err != nil {
+		// user was not found
+		NewAPIError(&APIError{false, "Could not find user", http.StatusNotFound}, w)
+		return
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Data: user}, w, http.StatusOK)
+}
+
 func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 	j, err := GetJSON(r.Body)
 	if err != nil {

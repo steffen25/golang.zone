@@ -45,7 +45,7 @@ func NewRouter(a *app.App) *mux.Router {
 	api.HandleFunc("/posts/{id:[0-9]+}", middlewares.Logger(pc.GetById)).Methods(http.MethodGet)
 	api.HandleFunc("/posts/{slug}", middlewares.Logger(pc.GetBySlug)).Methods(http.MethodGet)
 	api.HandleFunc("/posts", middlewares.Logger(middlewares.RequireAuthentication(a, pc.Create, true))).Methods(http.MethodPost)
-	api.HandleFunc("/posts/{id}", middlewares.Logger(middlewares.RequireAuthentication(a, pc.Update, true))).Methods(http.MethodPut)
+	api.HandleFunc("/posts/{id}", middlewares.Logger(middlewares.RequireAuthentication(a, pc.Update, true))).Methods(http.MethodPatch)
 
 	// Authentication
 	auth := api.PathPrefix("/auth").Subrouter()
@@ -53,7 +53,7 @@ func NewRouter(a *app.App) *mux.Router {
 	auth.HandleFunc("/login", middlewares.Logger(ac.Authenticate)).Methods(http.MethodPost)
 	auth.HandleFunc("/me", middlewares.Logger(middlewares.RequireAuthentication(a, ac.Me, false))).Methods(http.MethodGet)
 	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireRefreshToken(a, ac.RefreshTokens))).Methods(http.MethodGet)
-	auth.HandleFunc("/update", middlewares.Logger(middlewares.RequireAuthentication(a, uc.Update, false))).Methods(http.MethodPut)
+	auth.HandleFunc("/update", middlewares.Logger(middlewares.RequireAuthentication(a, uc.Update, false))).Methods(http.MethodPatch)
 	auth.HandleFunc("/logout", middlewares.Logger(middlewares.RequireAuthentication(a, ac.Logout, false))).Methods(http.MethodGet)
 	auth.HandleFunc("/logout/all", middlewares.Logger(middlewares.RequireAuthentication(a, ac.LogoutAll, false))).Methods(http.MethodGet)
 

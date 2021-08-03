@@ -93,14 +93,14 @@ Posts:
 | http://127.0.0.1:8080/api/v1/images/upload    | POST 				| Endpoint to upload images to a post using a wysiwyg editor - proctected by a auth middleware that require the user to be authenticated and be an admin |
 | http://127.0.0.1:8080/api/v1/posts/{id}      	| GET 				| Endpoint to retrieve a post specified by an id |
 | http://127.0.0.1:8080/api/v1/posts/{slug}     | GET 				| Endpoint to retrieve a post specified by a slug |
-| http://127.0.0.1:8080/api/v1/posts/{id}      	| PUT 				| Endpoint to update a specific post - proctected by a auth middleware that requires the user to be authenticated and be an admin |
+| http://127.0.0.1:8080/api/v1/posts/{id}      	|  PATCH 				| Endpoint to update a specific post - proctected by a auth middleware that requires the user to be authenticated and be an admin |
 
 Auth:
 
 | URL        												| Method           	| Info  |
 | ------------- 											|:-------------:	| -----:|
 | http://127.0.0.1:8080/api/v1/auth/login      				| POST 				| Endpoint to authenticate a user- returns a JWT that last for 24 hours |
-| http://127.0.0.1:8080/api/v1/auth/update      			| PUT 				| Endpoint to update the current user that is logged in - proctected by a auth middleware |
+| http://127.0.0.1:8080/api/v1/auth/update      			| PATCH 				| Endpoint to update the current user that is logged in - proctected by a auth middleware |
 | http://127.0.0.1:8080/api/v1/auth/refresh      			| GET 				| Endpoint to refresh a JWT - proctected by a auth middleware |
 | http://127.0.0.1:8080/api/v1/auth/logout      			| GET 				| Logout the user from the API by revoking the user's JWT - proctected by a auth middleware |
 | http://127.0.0.1:8080/api/v1/auth/logout/all      		| GET 				| Logout the user from all the places that he/she is logged in - proctected by a auth middleware |

@@ -80,6 +80,39 @@
 					"response": []
 				},
 				{
+					"name": "Update user",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{ACCESS_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=utf-8"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\":\"Jane doe\",\"newpassword\":\"123456789\",\"oldpassword\":\"123456\"}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/update",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Logout all devices",
 					"request": {
 						"method": "GET",
@@ -295,7 +328,7 @@
 				{
 					"name": "Update post",
 					"request": {
-						"method": "PUT",
+						"method": "PATCH",
 						"header": [
 							{
 								"key": "Authorization",
@@ -399,39 +432,6 @@
 		{
 			"name": "Users",
 			"item": [
-				{
-					"name": "Update user",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{ACCESS_TOKEN}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json; charset=utf-8"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\"name\":\"Jane doe\",\"newpassword\":\"123456789\",\"oldpassword\":\"123456\"}"
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/api/v1/auth/update",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"update"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Get user by id",
 					"request": {

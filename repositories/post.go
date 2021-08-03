@@ -99,7 +99,7 @@ func (pr *postRepository) GetTotalPostCount() (int, error) {
 func (pr *postRepository) Paginate(perpage int, offset int) ([]*models.Post, error) {
 	var posts []*models.Post
 
-	rows, err := pr.DB.Query("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=u.`id` LIMIT ? OFFSET ?", perpage, offset)
+	rows, err := pr.DB.Query("SELECT p.`id`, p.`title`, p.`slug`, p.`body`, p.`created_at`, p.`updated_at`, p.`user_id`, u.`name` as author FROM posts p INNER JOIN `users` as u on p.`user_id`=u.`id` ORDER BY p.`created_at` DESC LIMIT ? OFFSET ?", perpage, offset)
 	if err != nil {
 		return nil, err
 	}

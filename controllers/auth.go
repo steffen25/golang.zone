@@ -151,7 +151,12 @@ func (ac *AuthController) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAPIResponse(&APIResponse{Success: true, Message: "My information", Data: user}, w, http.StatusOK)
+	authUser := &models.AuthUser{
+		User:  user,
+		Admin: user.Admin,
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "My information", Data: authUser}, w, http.StatusOK)
 }
 
 func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/models"
@@ -20,6 +21,66 @@ type AuthController struct {
 
 func NewAuthController(a *app.App, us repositories.UserRepository, jwtService services.JWTAuthService) *AuthController {
 	return &AuthController{a, us, jwtService}
+}
+
+func (ac *AuthController) Register(w http.ResponseWriter, r *http.Request) {
+	j, err := GetJSON(r.Body)
+	if err != nil {
+		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
+		return
+	}
+	defer r.Body.Close()
+
+	name, err := j.GetString("name")
+	if err != nil {
+		NewAPIError(&APIError{false, "Name is required", http.StatusBadRequest}, w)
+		return
+	}
+	// TODO: Implement something like this and embed in a basecontroller https://stackoverflow.com/a/23960293/2554631
+	if len(name) < 2 || len(name) > 32 {
+		NewAPIError(&APIError{false, "Name must be between 2 and 32 characters", http.StatusBadRequest}, w)
+		return
+	}
+
+	email, err := j.GetString("email")
+	if err != nil {
+		NewAPIError(&APIError{false, "Email is required", http.StatusBadRequest}, w)
+		return
+	}
+	if ok := util.IsEmail(email); !ok {
+		NewAPIError(&APIError{false, "You must provide a valid email address", http.StatusBadRequest}, w)
+		return
+	}
+	exists := ac.UserRepository.Exists(email)
+	if exists {
+		NewAPIError(&APIError{false, "The email address is already in use", http.StatusBadRequest}, w)
+		return
+	}
+	pw, err := j.GetString("password")
+	if err != nil {
+		NewAPIError(&APIError{false, "Password is required", http.StatusBadRequest}, w)
+		return
+	}
+	if len(pw) < 6 {
+		NewAPIError(&APIError{false, "Password must not be less than 6 characters", http.StatusBadRequest}, w)
+		return
+	}
+
+	u := &models.User{
+		Name:      name,
+		Email:     email,
+		Admin:     false,
+		CreatedAt: time.Now(),
+	}
+	u.SetPassword(pw)
+
+	err = ac.UserRepository.Create(u)
+	if err != nil {
+		NewAPIError(&APIError{false, "Could not create user", http.StatusBadRequest}, w)
+		return
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "User created"}, w, http.StatusOK)
 }
 
 func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +135,23 @@ func (ac *AuthController) Authenticate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	NewAPIResponse(&APIResponse{Success: true, Message: "Login successful", Data: data}, w, http.StatusOK)
+}
+
+func (ac *AuthController) Me(w http.ResponseWriter, r *http.Request) {
+	uid, err := services.UserIdFromContext(r.Context())
+	if err != nil {
+		log.Println(err)
+		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		return
+	}
+
+	user, err := ac.UserRepository.FindById(uid)
+	if err != nil {
+		NewAPIError(&APIError{false, "Could not find user", http.StatusNotFound}, w)
+		return
+	}
+
+	NewAPIResponse(&APIResponse{Success: true, Message: "My information", Data: user}, w, http.StatusOK)
 }
 
 func (ac *AuthController) Logout(w http.ResponseWriter, r *http.Request) {

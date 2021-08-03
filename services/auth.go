@@ -14,8 +14,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
-	"github.com/dgrijalva/jwt-go/request"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v4/request"
 	"github.com/satori/go.uuid"
 	"github.com/steffen25/golang.zone/config"
 	"github.com/steffen25/golang.zone/database"
@@ -85,9 +85,13 @@ func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error
 	uid := strconv.Itoa(u.ID)
 	now := time.Now()
 	tokenHash := util.GetMD5Hash(now.String() + uid)
+	accessJWTId, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
 	authClaims := KAuthTokenClaims{
 		jwt.StandardClaims{
-			Id:        uid + "." + uuid.NewV4().String(),
+			Id:        uid + "." + accessJWTId.String(),
 			ExpiresAt: now.Add(TokenDuration).Unix(),
 			IssuedAt:  now.Unix(),
 		},
@@ -111,7 +115,11 @@ func (jwtService *jwtAuthService) GenerateTokens(u *models.User) (*Tokens, error
 	}
 
 	refreshToken := jwt.New(jwt.SigningMethodRS512)
-	authClaims.Id = uid + "." + uuid.NewV4().String()
+	refreshJWTId, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+	authClaims.Id = uid + "." + refreshJWTId.String()
 	authClaims.ExpiresAt = now.Add(RefreshTokenDuration).Unix()
 	refreshToken.Claims = authClaims
 	refreshTokenString, err := refreshToken.SignedString(jwtService.privateKey)

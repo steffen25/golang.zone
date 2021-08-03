@@ -14,7 +14,6 @@ import (
 	"github.com/steffen25/golang.zone/models"
 	"github.com/steffen25/golang.zone/repositories"
 	"github.com/steffen25/golang.zone/services"
-	"github.com/steffen25/golang.zone/util"
 )
 
 // Embed a UserDAO/Repository thingy
@@ -42,75 +41,6 @@ func (uc *UserController) Profile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	NewAPIResponse(&APIResponse{Data: uid}, w, http.StatusOK)
-}
-
-func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
-	// Validate the length of the body since some users could send a big payload
-	/*required := []string{"name", "email", "password"}
-	if len(params) != len(required) {
-		err := NewAPIError(false, "Invalid request")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
-		return
-	}*/
-
-	j, err := GetJSON(r.Body)
-	if err != nil {
-		NewAPIError(&APIError{false, "Invalid request", http.StatusBadRequest}, w)
-		return
-	}
-
-	name, err := j.GetString("name")
-	if err != nil {
-		NewAPIError(&APIError{false, "Name is required", http.StatusBadRequest}, w)
-		return
-	}
-	// TODO: Implement something like this and embed in a basecontroller https://stackoverflow.com/a/23960293/2554631
-	if len(name) < 2 || len(name) > 32 {
-		NewAPIError(&APIError{false, "Name must be between 2 and 32 characters", http.StatusBadRequest}, w)
-		return
-	}
-
-	email, err := j.GetString("email")
-	if err != nil {
-		NewAPIError(&APIError{false, "Email is required", http.StatusBadRequest}, w)
-		return
-	}
-	if ok := util.IsEmail(email); !ok {
-		NewAPIError(&APIError{false, "You must provide a valid email address", http.StatusBadRequest}, w)
-		return
-	}
-	exists := uc.UserRepository.Exists(email)
-	if exists {
-		NewAPIError(&APIError{false, "The email address is already in use", http.StatusBadRequest}, w)
-		return
-	}
-	pw, err := j.GetString("password")
-	if err != nil {
-		NewAPIError(&APIError{false, "Password is required", http.StatusBadRequest}, w)
-		return
-	}
-	if len(pw) < 6 {
-		NewAPIError(&APIError{false, "Password must not be less than 6 characters", http.StatusBadRequest}, w)
-		return
-	}
-
-	u := &models.User{
-		Name:      name,
-		Email:     email,
-		Admin:     false,
-		CreatedAt: time.Now(),
-	}
-	u.SetPassword(pw)
-
-	err = uc.UserRepository.Create(u)
-	if err != nil {
-		NewAPIError(&APIError{false, "Could not create user", http.StatusBadRequest}, w)
-		return
-	}
-
-	defer r.Body.Close()
-	NewAPIResponse(&APIResponse{Success: true, Message: "User created"}, w, http.StatusOK)
 }
 
 func (uc *UserController) GetAll(w http.ResponseWriter, r *http.Request) {

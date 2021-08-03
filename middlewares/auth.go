@@ -10,8 +10,8 @@ import (
 	"encoding/pem"
 	"os"
 
-	"github.com/dgrijalva/jwt-go"
-	"github.com/dgrijalva/jwt-go/request"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v4/request"
 	"github.com/steffen25/golang.zone/app"
 	"github.com/steffen25/golang.zone/controllers"
 	"github.com/steffen25/golang.zone/services"

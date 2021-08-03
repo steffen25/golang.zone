@@ -1,15 +1,42 @@
 {
-	"variables": [],
 	"info": {
+		"_postman_id": "bd540d6f-ec61-4ff3-a602-bb1459cf936f",
 		"name": "golang.zone",
-		"_postman_id": "c48acdb3-896f-e398-c199-b9d79e5538b1",
-		"description": "",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "Auth",
 			"item": [
+				{
+					"name": "Create user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=utf-8"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\":\"John doe\",\"password\":\"123456\",\"email\":\"demo@demo.com\"}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/register",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "Login",
 					"event": [
@@ -26,115 +53,170 @@
 						}
 					],
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/auth/login",
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\"email\":\"demo@demo.com\",\"password\":\"123456\"}"
 						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Logout all devices",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/auth/logout/all",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MDg0NDk1ODcsImp0aSI6IjI1LjI0NDNlNmQzLWY2ZTYtNDJmZi04MzczLTE0NTY1NDI5NGEwNyIsImlhdCI6MTUwODQ0NTk4NywiaWQiOjI1LCJhZG1pbiI6dHJ1ZX0.i1KR8EivQff18hCTXJcYmaFlewJt1IMLKs3psLOUF2A",
-								"description": ""
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MDg0NDk1ODcsImp0aSI6IjI1LjI0NDNlNmQzLWY2ZTYtNDJmZi04MzczLTE0NTY1NDI5NGEwNyIsImlhdCI6MTUwODQ0NTk4NywiaWQiOjI1LCJhZG1pbiI6dHJ1ZX0.i1KR8EivQff18hCTXJcYmaFlewJt1IMLKs3psLOUF2A"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/logout/all",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout",
+								"all"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Logout",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/auth/logout",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "{{ACCESS_TOKEN}}",
-								"description": ""
+								"value": "{{ACCESS_TOKEN}}"
 							},
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/logout",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get me",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{ACCESS_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=utf-8"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/logout",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Refresh",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/auth/refresh",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "{{REFRESH_TOKEN}}",
-								"description": ""
+								"value": "{{REFRESH_TOKEN}}"
 							},
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/refresh",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"refresh"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Protected",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/protected",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "{{ACCESS_TOKEN}}",
-								"description": ""
+								"value": "{{ACCESS_TOKEN}}"
 							},
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/protected",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"protected"
+							]
+						}
 					},
 					"response": []
 				}
@@ -146,38 +228,43 @@
 				{
 					"name": "Create post",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/posts",
 						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "{{ACCESS_TOKEN}}",
-								"description": ""
+								"value": "{{ACCESS_TOKEN}}"
 							},
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\"title\":\"dette er en lang titel\",\"body\":\"lorem ipsum \\ud83d\\udc4d\"}"
 						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/posts",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"posts"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Upload image wysiwyg editor",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/images/upload",
 						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "{{ACCESS_TOKEN}}",
-								"description": ""
+								"value": "{{ACCESS_TOKEN}}"
 							}
 						],
 						"body": {
@@ -186,43 +273,63 @@
 								{
 									"key": "image",
 									"value": "",
-									"description": "",
 									"type": "file"
 								}
 							]
 						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/images/upload",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"images",
+								"upload"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Update post",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/posts/14",
 						"method": "PUT",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "{{ACCESS_TOKEN}}",
-								"description": ""
+								"value": "{{ACCESS_TOKEN}}"
 							},
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\"title\":\"bacon is life\",\"body\":\"bacon bacon bacon bacon bacon\"}"
 						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/posts/14",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"14"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Get all posts",
 					"request": {
+						"method": "GET",
+						"header": [],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/posts?perpage=10&page=1",
 							"host": [
@@ -236,54 +343,54 @@
 							"query": [
 								{
 									"key": "perpage",
-									"value": "10",
-									"equals": true,
-									"description": ""
+									"value": "10"
 								},
 								{
 									"key": "page",
-									"value": "1",
-									"equals": true,
-									"description": ""
+									"value": "1"
 								}
-							],
-							"variable": []
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Get post by id",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/posts/45",
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/posts/45",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"45"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Get post by slug",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/posts/risus-augue-justo",
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/posts/risus-augue-justo",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"risus-augue-justo"
+							]
+						}
 					},
 					"response": []
 				}
@@ -295,105 +402,108 @@
 				{
 					"name": "Update user",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/auth/update",
 						"method": "PUT",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "{{ACCESS_TOKEN}}",
-								"description": ""
+								"value": "{{ACCESS_TOKEN}}"
 							},
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\"name\":\"Jane doe\",\"newpassword\":\"123456789\",\"oldpassword\":\"123456\"}"
 						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/update",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"update"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Get user by id",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/users/1",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "Create user",
-					"request": {
-						"url": "{{BASE_URL}}/api/v1/users",
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\"name\":\"John doe\",\"password\":\"123456\",\"email\":\"demo@demo.com\"}"
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/users/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"1"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Get all users",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/users",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/users",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Get posts by user",
 					"request": {
-						"url": "{{BASE_URL}}/api/v1/users/25/posts",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json; charset=utf-8",
-								"description": ""
+								"value": "application/json; charset=utf-8"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/users/25/posts",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"25",
+								"posts"
+							]
+						}
 					},
 					"response": []
 				}

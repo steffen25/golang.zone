@@ -1,8 +1,16 @@
 package controllers
 
 import (
+	"bufio"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/json"
+	"encoding/pem"
+	"fmt"
+	"github.com/golang-jwt/jwt/v4"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -211,33 +219,67 @@ func (ac *AuthController) LogoutAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *AuthController) RefreshTokens(w http.ResponseWriter, r *http.Request) {
-	tokenString, err := services.GetRefreshTokenFromRequest(&ac.App.Config, r)
+	type RefreshTokenRequest struct {
+		RefreshToken string `json:"refreshToken"`
+	}
+
+	var refreshTokenRequest RefreshTokenRequest
+
+	err := json.NewDecoder(r.Body).Decode(&refreshTokenRequest)
 	if err != nil {
-		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
+		NewAPIError(&APIError{Success: false, Message: "Could not decode request payload", Status: http.StatusUnauthorized}, w)
 		return
 	}
-	uid, err := services.UserIdFromContext(r.Context())
+	publicKeyFile, err := os.Open(ac.App.Config.JWT.PublicKeyPath)
 	if err != nil {
-		NewAPIError(&APIError{false, "Something went wrong", http.StatusInternalServerError}, w)
-		return
+		panic(err)
 	}
-	tokenHash, err := services.ExtractRefreshTokenHash(&ac.App.Config, tokenString)
+
+	pemfileinfo, _ := publicKeyFile.Stat()
+	var size int64 = pemfileinfo.Size()
+	pembytes := make([]byte, size)
+
+	buffer := bufio.NewReader(publicKeyFile)
+	_, err = buffer.Read(pembytes)
+
+	data, _ := pem.Decode([]byte(pembytes))
+
+	publicKeyFile.Close()
+
+	publicKeyImported, err := x509.ParsePKIXPublicKey(data.Bytes)
+
 	if err != nil {
-		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
-		return
+		panic(err)
 	}
-	u, err := ac.UserRepository.FindById(uid)
+
+	rsaPub, ok := publicKeyImported.(*rsa.PublicKey)
+
+	if !ok {
+		panic(err)
+	}
+
+	var tokenClaims services.KAuthTokenClaims
+	_, err = jwt.ParseWithClaims(refreshTokenRequest.RefreshToken, &tokenClaims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return rsaPub, nil
+	})
+
+	u, err := ac.UserRepository.FindById(tokenClaims.UID)
 	if err != nil {
 		NewAPIError(&APIError{false, "Could not find user", http.StatusBadRequest}, w)
 		return
 	}
+
 	tokens, err := ac.jwtService.GenerateTokens(u)
 	if err != nil {
 		NewAPIError(&APIError{false, "Something went wrong", http.StatusBadRequest}, w)
 		return
 	}
 
-	keys := ac.App.Redis.Keys("*" + tokenHash + ".*")
+	keys := ac.App.Redis.Keys("*" + tokenClaims.TokenHash + ".*")
 	for _, token := range keys.Val() {
 		err := ac.App.Redis.Del(token).Err()
 		if err != nil {

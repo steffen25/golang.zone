@@ -52,7 +52,7 @@ func NewRouter(a *app.App) *mux.Router {
 	auth.HandleFunc("/register", middlewares.Logger(ac.Register)).Methods(http.MethodPost)
 	auth.HandleFunc("/login", middlewares.Logger(ac.Authenticate)).Methods(http.MethodPost)
 	auth.HandleFunc("/me", middlewares.Logger(middlewares.RequireAuthentication(a, ac.Me, false))).Methods(http.MethodGet)
-	auth.HandleFunc("/refresh", middlewares.Logger(middlewares.RequireRefreshToken(a, ac.RefreshTokens))).Methods(http.MethodGet)
+	auth.HandleFunc("/token/refresh", middlewares.Logger(ac.RefreshTokens)).Methods(http.MethodPost)
 	auth.HandleFunc("/update", middlewares.Logger(middlewares.RequireAuthentication(a, uc.Update, false))).Methods(http.MethodPatch)
 	auth.HandleFunc("/logout", middlewares.Logger(middlewares.RequireAuthentication(a, ac.Logout, false))).Methods(http.MethodGet)
 	auth.HandleFunc("/logout/all", middlewares.Logger(middlewares.RequireAuthentication(a, ac.LogoutAll, false))).Methods(http.MethodGet)

@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  golang_zone_app:
+    container_name: golang_zone_app
+    build:
+      context: .
+      dockerfile: ./docker/images/dev.Dockerfile
+    ports:
+    - "127.0.0.1:8080:8080"
+    volumes:
+    - ./:/code/golang-zone
+    env_file:
+      - .env
+  golang_zone_db:
+    container_name: golang_zone_db
+    image: postgres:13.1
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: docker
+    volumes:
+      - ./docker/postgres-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+  golang_zone_redis:
+    container_name: golang_zone_redis
+    image: redis:6.0.9-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "127.0.0.1:6380:6379"
+    volumes:
+      - ./docker/redis-data:/data
